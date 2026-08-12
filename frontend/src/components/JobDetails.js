@@ -10,6 +10,7 @@ function JobDetails() {
   const [status, setStatus] = useState("");
   const [workDone, setWorkDone] = useState("");
   const [completionType, setCompletionType] = useState("");
+  const [revenue, setRevenue] = useState("");
   const [message, setMessage] = useState("");
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
@@ -49,6 +50,29 @@ function JobDetails() {
     } catch (error) {
       console.error(error);
       setMessage("Failed to update job.");
+    }
+  };
+
+  const handleCompleteJob = async () => {
+    try {
+      const res = await axios.put(`${apiUrl}/api/appointments/${id}/complete-job`, {
+        workDone,
+        completionType,
+        revenue,
+      });
+
+      setAppointment(res.data.appointment);
+      setStatus(res.data.appointment.status);
+      setMessage("Job completed and customer saved/updated!");
+
+      if (completionType === "partial") {
+        setShowFeedbackPopup(true);
+      } else {
+        navigate(`/feedback/${id}`);
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage("Failed to complete job.");
     }
   };
 
@@ -107,8 +131,21 @@ function JobDetails() {
           style={styles.textarea}
         />
 
+        <label>Revenue</label>
+        <input
+          type="number"
+          value={revenue}
+          onChange={(e) => setRevenue(e.target.value)}
+          placeholder="Enter revenue"
+          style={styles.input}
+        />
+
         <button onClick={handleSave} style={styles.button}>
           Save Job Update
+        </button>
+
+        <button onClick={handleCompleteJob} style={styles.completeButton}>
+          Complete Job
         </button>
       </div>
 
@@ -118,8 +155,7 @@ function JobDetails() {
         <div style={styles.popupOverlay}>
           <div style={styles.popup}>
             <h3>Request Feedback</h3>
-            <p>This job is marked as <strong>Needs Feedback</strong>. Open the feedback form for this customer?</p>
-
+            <p>This job is ready for feedback. Open the feedback form?</p>
             <div style={styles.popupButtons}>
               <button onClick={goToFeedback} style={styles.yesButton}>
                 Yes
@@ -172,6 +208,15 @@ const styles = {
     border: "none",
     borderRadius: "8px",
     background: "#007bff",
+    color: "white",
+    cursor: "pointer",
+    marginRight: "10px",
+  },
+  completeButton: {
+    padding: "12px 18px",
+    border: "none",
+    borderRadius: "8px",
+    background: "#28a745",
     color: "white",
     cursor: "pointer",
   },

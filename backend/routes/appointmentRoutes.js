@@ -185,4 +185,61 @@ router.get("/customers/all", async (req, res) => {
   }
 });
 
+router.put("/:id/complete-job", async (req, res) => {
+  try {
+    const { workDone, completionType, revenue } = req.body;
+
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Update appointment/job info
+    appointment.workDone = workDone;
+    appointment.completionType = completionType;
+    appointment.status =
+      completionType === "partial" ? "Partially Completed" : "Completed";
+
+    await appointment.save();
+
+    // Create or update customer
+    let customer = await Customer.findOne({ phone: appointment.phone });
+
+    if (customer) {
+      customer.name = appointment.customerName;
+      customer.email = appointment.email;
+      customer.address = appointment.address;
+      customer.deviceType = appointment.issueType;
+      customer.consentToContact = appointment.consentAccepted;
+      customer.totalServices += 1;
+      customer.totalRevenue += Number(revenue || 0);
+      customer.lastServiceDate = new Date();
+      customer.active = true;
+      await customer.save();
+    } else {
+      customer = await Customer.create({
+        name: appointment.customerName,
+        phone: appointment.phone,
+        email: appointment.email,
+        address: appointment.address,
+        deviceType: appointment.issueType,
+        consentToContact: appointment.consentAccepted,
+        active: true,
+        totalServices: 1,
+        totalRevenue: Number(revenue || 0),
+        lastServiceDate: new Date(),
+      });
+    }
+
+    res.json({
+      message: "Job completed and customer record updated",
+      appointment,
+      customer,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
