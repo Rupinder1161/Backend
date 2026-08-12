@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import JobDetails from "./components/JobDetails";
 import BookAppointment from "./components/BookAppointment";
+import Feedback from "./components/Feedback";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/book-appointment" element={<BookAppointment />} />
         <Route path="/job/:id" element={<JobDetails />} />
+        <Route path="/feedback/:id" element={<Feedback />} />
       </Routes>
     </BrowserRouter>
   );

@@ -37,6 +37,9 @@ const appointmentSchema = new mongoose.Schema(
       enum: ["completed", "partial", ""],
       default: "",
     },
+    feedbackRating: { type: Number, min: 1, max: 5, default: null },
+feedbackComment: { type: String, default: "" },
+feedbackSubmitted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

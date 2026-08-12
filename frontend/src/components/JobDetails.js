@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function JobDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [appointment, setAppointment] = useState(null);
   const [status, setStatus] = useState("");
   const [workDone, setWorkDone] = useState("");
   const [completionType, setCompletionType] = useState("");
   const [message, setMessage] = useState("");
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+
   const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
@@ -38,10 +42,18 @@ function JobDetails() {
 
       setAppointment(res.data);
       setMessage("Job updated successfully!");
+
+      if (status === "Needs Feedback") {
+        setShowFeedbackPopup(true);
+      }
     } catch (error) {
       console.error(error);
       setMessage("Failed to update job.");
     }
+  };
+
+  const goToFeedback = () => {
+    navigate(`/feedback/${id}`);
   };
 
   if (!appointment) return <p style={{ padding: "20px" }}>Loading job details...</p>;
@@ -101,6 +113,24 @@ function JobDetails() {
       </div>
 
       {message && <p>{message}</p>}
+
+      {showFeedbackPopup && (
+        <div style={styles.popupOverlay}>
+          <div style={styles.popup}>
+            <h3>Request Feedback</h3>
+            <p>This job is marked as <strong>Needs Feedback</strong>. Open the feedback form for this customer?</p>
+
+            <div style={styles.popupButtons}>
+              <button onClick={goToFeedback} style={styles.yesButton}>
+                Yes
+              </button>
+              <button onClick={() => setShowFeedbackPopup(false)} style={styles.noButton}>
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -143,6 +173,45 @@ const styles = {
     borderRadius: "8px",
     background: "#007bff",
     color: "white",
+    cursor: "pointer",
+  },
+  popupOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  popup: {
+    background: "#fff",
+    padding: "24px",
+    borderRadius: "12px",
+    maxWidth: "420px",
+    width: "90%",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+  },
+  popupButtons: {
+    display: "flex",
+    gap: "12px",
+    marginTop: "20px",
+    justifyContent: "flex-end",
+  },
+  yesButton: {
+    padding: "10px 16px",
+    border: "none",
+    borderRadius: "8px",
+    background: "#28a745",
+    color: "#fff",
+    cursor: "pointer",
+  },
+  noButton: {
+    padding: "10px 16px",
+    border: "none",
+    borderRadius: "8px",
+    background: "#6c757d",
+    color: "#fff",
     cursor: "pointer",
   },
 };
