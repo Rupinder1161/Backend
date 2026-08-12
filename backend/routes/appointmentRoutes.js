@@ -47,4 +47,24 @@ router.put("/:id/status", async (req, res) => {
   }
 });
 
+router.put("/:id/job-update", async (req, res) => {
+  try {
+    const { status, workDone, completionType } = req.body;
+
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { status, workDone, completionType },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    res.json(appointment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

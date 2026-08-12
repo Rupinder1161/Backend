@@ -31,6 +31,12 @@ const appointmentSchema = new mongoose.Schema(
       ],
       default: "Booked",
     },
+    workDone: { type: String, default: "" },
+    completionType: {
+      type: String,
+      enum: ["completed", "partial", ""],
+      default: "",
+    },
   },
   { timestamps: true }
 );

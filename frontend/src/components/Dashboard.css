@@ -1,0 +1,51 @@
+.dashboard-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: #f4f6f8;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 200px;
+}
+
+.stat-card h3 {
+  margin: 0 0 10px;
+}
+
+.stat-card p {
+  font-size: 28px;
+  margin: 0;
+  font-weight: bold;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.appointments-table th,
+.appointments-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.appointments-table th {
+  background: #f8f9fa;
+}
