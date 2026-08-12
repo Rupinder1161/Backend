@@ -93,7 +93,11 @@ function CustomerDashboard() {
           style={styles.search}
         />
 
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} style={styles.select}>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          style={styles.select}
+        >
           <option value="all">All Customers</option>
           <option value="ready">Ready to Contact</option>
           <option value="repeat">Repeat Customers</option>
@@ -107,35 +111,81 @@ function CustomerDashboard() {
       ) : filteredCustomers.length === 0 ? (
         <p>No customers found.</p>
       ) : (
-        <div style={styles.horizontalList}>
-          {filteredCustomers.map((customer) => (
-            <div key={customer._id} style={styles.card}>
-              <h3>{customer.name}</h3>
-              <p><strong>Phone:</strong> {customer.phone}</p>
-              <p><strong>Email:</strong> {customer.email || "N/A"}</p>
-              <p><strong>Address:</strong> {customer.address || "N/A"}</p>
-              <p><strong>Device:</strong> {customer.deviceType}</p>
-              <p><strong>Total Services:</strong> {customer.totalServices}</p>
-              <p><strong>Total Revenue:</strong> ${customer.totalRevenue}</p>
-              <p><strong>Last Service:</strong> {customer.lastServiceDate ? new Date(customer.lastServiceDate).toLocaleDateString() : "N/A"}</p>
-              <p><strong>Days Since Last Service:</strong> {customer.daysSinceLastService ?? "N/A"}</p>
-              <p><strong>Ready to Contact:</strong> {customer.readyToContact ? "Yes" : "No"}</p>
-              <p><strong>Last Contact Status:</strong> {customer.lastContactStatus || "N/A"}</p>
-              <p><strong>Last Contacted:</strong> {customer.lastContactedDate ? new Date(customer.lastContactedDate).toLocaleDateString() : "N/A"}</p>
-
-              <div style={styles.buttons}>
-                <button onClick={() => handleContacted(customer._id)} style={styles.button}>
-                  Contacted
-                </button>
-                <button onClick={() => handleReplied(customer._id)} style={styles.buttonGreen}>
-                  Replied
-                </button>
-                <button onClick={() => handleNoReply(customer._id)} style={styles.buttonGray}>
-                  No Reply
-                </button>
-              </div>
-            </div>
-          ))}
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.headerCell}>Name</th>
+                <th style={styles.headerCell}>Phone</th>
+                <th style={styles.headerCell}>Email</th>
+                <th style={styles.headerCell}>Address</th>
+                <th style={styles.headerCell}>Device</th>
+                <th style={styles.headerCell}>Total Services</th>
+                <th style={styles.headerCell}>Total Revenue</th>
+                <th style={styles.headerCell}>Last Service</th>
+                <th style={styles.headerCell}>Days Since</th>
+                <th style={styles.headerCell}>Ready?</th>
+                <th style={styles.headerCell}>Last Contact</th>
+                <th style={styles.headerCell}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCustomers.map((customer, index) => (
+                <tr
+                  key={customer._id}
+                  style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}
+                >
+                  <td style={styles.cell}>{customer.name}</td>
+                  <td style={styles.cell}>{customer.phone}</td>
+                  <td style={styles.cell}>{customer.email || "N/A"}</td>
+                  <td style={styles.cell}>{customer.address || "N/A"}</td>
+                  <td style={styles.cell}>{customer.deviceType}</td>
+                  <td style={styles.cell}>{customer.totalServices}</td>
+                  <td style={styles.cell}>${customer.totalRevenue}</td>
+                  <td style={styles.cell}>
+                    {customer.lastServiceDate
+                      ? new Date(customer.lastServiceDate).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                  <td style={styles.cell}>
+                    {customer.daysSinceLastService ?? "N/A"}
+                  </td>
+                  <td style={styles.cell}>
+                    {customer.readyToContact ? "Yes" : "No"}
+                  </td>
+                  <td style={styles.cell}>
+                    {customer.lastContactStatus || "N/A"}
+                    <br />
+                    {customer.lastContactedDate
+                      ? new Date(customer.lastContactedDate).toLocaleDateString()
+                      : ""}
+                  </td>
+                  <td style={styles.cell}>
+                    <div style={styles.buttons}>
+                      <button
+                        onClick={() => handleContacted(customer._id)}
+                        style={styles.button}
+                      >
+                        Contacted
+                      </button>
+                      <button
+                        onClick={() => handleReplied(customer._id)}
+                        style={styles.buttonGreen}
+                      >
+                        Replied
+                      </button>
+                      <button
+                        onClick={() => handleNoReply(customer._id)}
+                        style={styles.buttonGray}
+                      >
+                        No Reply
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -144,19 +194,25 @@ function CustomerDashboard() {
           <div style={styles.insightCard}>
             <h3>Served by Month</h3>
             {Object.entries(insights.serviceByMonth).map(([month, count]) => (
-              <p key={month}>{month}: {count}</p>
+              <p key={month}>
+                {month}: {count}
+              </p>
             ))}
           </div>
           <div style={styles.insightCard}>
             <h3>Served by Week</h3>
             {Object.entries(insights.serviceByWeek).map(([week, count]) => (
-              <p key={week}>{week}: {count}</p>
+              <p key={week}>
+                {week}: {count}
+              </p>
             ))}
           </div>
           <div style={styles.insightCard}>
             <h3>Served by Day</h3>
             {Object.entries(insights.serviceByDay).map(([day, count]) => (
-              <p key={day}>{day}: {count}</p>
+              <p key={day}>
+                {day}: {count}
+              </p>
             ))}
           </div>
         </div>
@@ -167,7 +223,7 @@ function CustomerDashboard() {
 
 const styles = {
   container: {
-    maxWidth: "1400px",
+    maxWidth: "1600px",
     margin: "40px auto",
     padding: "20px",
     fontFamily: "Arial, sans-serif",
@@ -202,46 +258,62 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #ccc",
   },
-  horizontalList: {
-    display: "flex",
-    gap: "16px",
+  tableWrapper: {
     overflowX: "auto",
-    paddingBottom: "12px",
-  },
-  card: {
-    minWidth: "320px",
     background: "#fff",
-    padding: "20px",
     borderRadius: "12px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-    flex: "0 0 auto",
+    padding: "8px",
+    marginBottom: "24px",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    minWidth: "1200px",
+  },
+  headerCell: {
+    padding: "14px 12px",
+    background: "#f3f4f6",
+    borderBottom: "2px solid #d1d5db",
+    textAlign: "left",
+    whiteSpace: "nowrap",
+  },
+  cell: {
+    padding: "14px 12px",
+    borderBottom: "1px solid #e5e7eb",
+    verticalAlign: "top",
+  },
+  rowLight: {
+    backgroundColor: "#f8fbff",
+  },
+  rowWhite: {
+    backgroundColor: "#ffffff",
   },
   buttons: {
     display: "flex",
-    gap: "10px",
+    gap: "8px",
     flexWrap: "wrap",
-    marginTop: "16px",
   },
   button: {
-    padding: "10px 14px",
+    padding: "8px 12px",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "6px",
     background: "#007bff",
     color: "#fff",
     cursor: "pointer",
   },
   buttonGreen: {
-    padding: "10px 14px",
+    padding: "8px 12px",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "6px",
     background: "#28a745",
     color: "#fff",
     cursor: "pointer",
   },
   buttonGray: {
-    padding: "10px 14px",
+    padding: "8px 12px",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "6px",
     background: "#6c757d",
     color: "#fff",
     cursor: "pointer",
