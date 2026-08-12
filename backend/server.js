@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const appointmentRoutes = require("./routes/appointmentRoutes");
+const customerRoutes = require("./routes/customerRoutes");
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/customers", customerRoutes);
 
 const PORT = process.env.PORT || 5000;
 
