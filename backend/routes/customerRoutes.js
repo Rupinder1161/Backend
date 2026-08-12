@@ -7,7 +7,9 @@ router.get("/", async (req, res) => {
   try {
     const customers = await Customer.find().sort({ createdAt: -1 });
 
-    const updatedCustomers = customers.map((customer) => {
+    const now = new Date();
+
+    const enrichedCustomers = customers.map((customer) => {
       let readyToContact = false;
       let daysSinceLastService = null;
 
@@ -27,7 +29,67 @@ router.get("/", async (req, res) => {
       };
     });
 
-    res.json(updatedCustomers);
+    const totalCustomers = customers.length;
+    const totalRevenue = customers.reduce(
+      (sum, customer) => sum + (customer.totalRevenue || 0),
+      0
+    );
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thisWeekStart = new Date(now);
+    thisWeekStart.setDate(now.getDate() - now.getDay());
+    thisWeekStart.setHours(0, 0, 0, 0);
+
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const customersServedToday = customers.filter(
+      (c) => c.lastServiceDate && new Date(c.lastServiceDate) >= today
+    ).length;
+
+    const customersServedThisWeek = customers.filter(
+      (c) => c.lastServiceDate && new Date(c.lastServiceDate) >= thisWeekStart
+    ).length;
+
+    const customersServedThisMonth = customers.filter(
+      (c) => c.lastServiceDate && new Date(c.lastServiceDate) >= thisMonthStart
+    ).length;
+
+    const serviceByMonth = {};
+    const serviceByWeek = {};
+    const serviceByDay = {};
+
+    customers.forEach((customer) => {
+      if (!customer.lastServiceDate) return;
+
+      const date = new Date(customer.lastServiceDate);
+
+      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+      const weekKey = `${date.getFullYear()}-W${getWeekNumber(date)}`;
+      const dayKey = date.toISOString().split("T")[0];
+
+      serviceByMonth[monthKey] = (serviceByMonth[monthKey] || 0) + 1;
+      serviceByWeek[weekKey] = (serviceByWeek[weekKey] || 0) + 1;
+      serviceByDay[dayKey] = (serviceByDay[dayKey] || 0) + 1;
+    });
+
+    function getWeekNumber(date) {
+      const oneJan = new Date(date.getFullYear(), 0, 1);
+      return Math.ceil((((date - oneJan) / 86400000) + oneJan.getDay() + 1) / 7);
+    }
+
+    res.json({
+      customers: enrichedCustomers,
+      insights: {
+        totalCustomers,
+        totalRevenue,
+        customersServedToday,
+        customersServedThisWeek,
+        customersServedThisMonth,
+        serviceByMonth,
+        serviceByWeek,
+        serviceByDay,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
