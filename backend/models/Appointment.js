@@ -20,8 +20,8 @@ const appointmentSchema = new mongoose.Schema(
     consentAccepted: { type: Boolean, required: true, default: false },
     consentTextVersion: { type: String, default: "v1" },
     consentAcceptedByCustomer: { type: Boolean, default: false },
-consentAcceptedAt: { type: Date, default: null },
-consentNotesVersion: { type: String, default: "v1" },
+    consentAcceptedAt: { type: Date, default: null },
+    consentNotesVersion: { type: String, default: "v1" },
 
     status: {
       type: String,
@@ -29,6 +29,7 @@ consentNotesVersion: { type: String, default: "v1" },
         "Booked",
         "Scheduled",
         "Assigned",
+        "Awaiting Consent",
         "In Progress",
         "Needs Feedback",
         "Completed",
@@ -40,17 +41,16 @@ consentNotesVersion: { type: String, default: "v1" },
       default: "Booked",
     },
 
-    // Tech assignment
     assignedTech: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
+
     jobNumber: { type: String, default: "" },
     startTime: { type: Date, default: null },
     endTime: { type: Date, default: null },
 
-    // Work / completion
     workDone: { type: String, default: "" },
     completionType: {
       type: String,
@@ -59,13 +59,27 @@ consentNotesVersion: { type: String, default: "v1" },
     },
     revenue: { type: Number, default: 0 },
 
-    // Final closing
     finalNotes: { type: String, default: "" },
 
-    // Feedback
     feedbackRating: { type: Number, min: 1, max: 5, default: null },
     feedbackComment: { type: String, default: "" },
     feedbackSubmitted: { type: Boolean, default: false },
+
+    jobTimeline: [
+      {
+        action: { type: String, required: true },
+        note: { type: String, default: "" },
+        createdAt: { type: Date, default: Date.now },
+        createdBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          default: null,
+        },
+      },
+    ],
+
+    needsFollowUp: { type: Boolean, default: false },
+    followUpReason: { type: String, default: "" },
   },
   { timestamps: true }
 );

@@ -426,4 +426,36 @@ router.put("/:id/consent", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+
+router.put("/:id/timeline", async (req, res) => {
+  try {
+    const { action, note, createdBy } = req.body;
+
+    if (!action) {
+      return res.status(400).json({ message: "Action is required" });
+    }
+
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    appointment.jobTimeline.push({
+      action,
+      note: note || "",
+      createdBy: createdBy || null,
+    });
+
+    await appointment.save();
+
+    res.json({
+      message: "Timeline entry added",
+      appointment,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

@@ -1,0 +1,30 @@
+# dependencies
+node_modules
+
+# backend
+backend/node_modules
+backend/.env
+backend/seedAdmin.js
+
+# frontend
+frontend/node_modules
+frontend/.env
+frontend/build
+frontend/dist
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# editor files
+.vscode/
+.idea/
+
+# environment files
+.env
