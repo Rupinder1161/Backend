@@ -15,6 +15,8 @@ import CustomerDashboard from "./components/CustomerDashboard";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserManagement from "./components/UserManagement";
+import TechDashboard from "./components/TechDashboard";
+import ConsentPage from "./components/ConsentPage";
 
 function AppRoutes() {
   const { user, logout } = React.useContext(AuthContext);
@@ -97,6 +99,15 @@ function AppRoutes() {
         />
 
         <Route
+          path="/tech"
+          element={
+            <ProtectedRoute allowedRoles={["tech"]}>
+              <TechDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/job/:id"
           element={
             <ProtectedRoute allowedRoles={["admin", "seniorTech", "tech"]}>
@@ -106,19 +117,19 @@ function AppRoutes() {
         />
 
         <Route
-          path="/feedback/:id"
+          path="/job/:id/consent"
           element={
             <ProtectedRoute allowedRoles={["admin", "seniorTech", "tech"]}>
-              <Feedback />
+              <ConsentPage />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/tech"
+          path="/feedback/:id"
           element={
-            <ProtectedRoute allowedRoles={["tech"]}>
-              <div style={{ padding: 20 }}>Tech job board coming next...</div>
+            <ProtectedRoute allowedRoles={["admin", "seniorTech", "tech"]}>
+              <Feedback />
             </ProtectedRoute>
           }
         />
