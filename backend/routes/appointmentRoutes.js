@@ -310,4 +310,59 @@ router.put("/:id/reopen", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+// Get jobs assigned to a tech
+router.get("/tech/:techId", async (req, res) => {
+  try {
+    const jobs = await Appointment.find({
+      assignedTech: req.params.techId,
+      status: { $ne: "Closed" },
+    }).sort({ createdAt: -1 });
+
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+router.put("/:id/start-job", async (req, res) => {
+  try {
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: "In Progress",
+        startTime: new Date(),
+      },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.json(appointment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+router.put("/:id/assign-tech", async (req, res) => {
+  try {
+    const { techId } = req.body;
+
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      {
+        assignedTech: techId,
+        status: "Assigned",
+      },
+      { new: true }
+    ).populate("assignedTech", "name email role");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.json(appointment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

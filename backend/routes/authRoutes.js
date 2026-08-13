@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const protect = require("../middleware/authMiddleware");
 
 // Register user
 router.post("/register", async (req, res) => {
@@ -134,5 +135,9 @@ router.put("/users/:id/deactivate", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+});
+// Get current logged in user
+router.get("/me", protect, async (req, res) => {
+  res.json(req.user);
 });
 module.exports = router;
