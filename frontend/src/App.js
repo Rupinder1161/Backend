@@ -19,7 +19,11 @@ import TechDashboard from "./components/TechDashboard";
 import ConsentPage from "./components/ConsentPage";
 
 function AppRoutes() {
-  const { user, logout } = React.useContext(AuthContext);
+  const { user, logout, loadingAuth } = React.useContext(AuthContext);
+
+if (loadingAuth) {
+  return <div style={{ padding: 20 }}>Loading...</div>;
+}
 
   return (
     <>

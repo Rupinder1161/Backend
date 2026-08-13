@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 function TechDashboard() {
-  const { user } = useContext(AuthContext);
+  const { user, loadingAuth } = useContext(AuthContext);
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingJobs, setLoadingJobs] = useState(true);
   const [message, setMessage] = useState("");
   const apiUrl = process.env.REACT_APP_API_URL;
   const navigate = useNavigate();
@@ -14,19 +14,36 @@ function TechDashboard() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        if (!user?.id) return;
+        const techId = user?.id || user?._id;
 
-        const res = await axios.get(`${apiUrl}/api/appointments/tech/${user.id}`);
-        setJobs(res.data);
+        if (!techId) return;
+
+        const res = await axios.get(`${apiUrl}/api/appointments/tech/${techId}`);
+        setJobs(res.data || []);
       } catch (error) {
         console.error("Error fetching tech jobs:", error);
+        setMessage("Failed to load jobs.");
       } finally {
-        setLoading(false);
+        setLoadingJobs(false);
       }
     };
 
-    fetchJobs();
-  }, [apiUrl, user]);
+    if (!loadingAuth && user) {
+      fetchJobs();
+    }
+  }, [apiUrl, user, loadingAuth]);
+
+  const handleOpenConsent = (jobId) => {
+    navigate(`/job/${jobId}/consent`);
+  };
+
+  const handleOpenJob = (jobId) => {
+    navigate(`/job/${jobId}`);
+  };
+
+  if (loadingAuth) {
+    return <div style={styles.loading}>Loading auth...</div>;
+  }
 
   return (
     <div style={styles.container}>
@@ -35,7 +52,7 @@ function TechDashboard() {
 
       {message && <p>{message}</p>}
 
-      {loading ? (
+      {loadingJobs ? (
         <p>Loading jobs...</p>
       ) : jobs.length === 0 ? (
         <p>No jobs assigned to you yet.</p>
@@ -66,13 +83,13 @@ function TechDashboard() {
                   <td style={styles.td}>
                     <div style={styles.buttons}>
                       <button
-                        onClick={() => navigate(`/job/${job._id}/consent`)}
+                        onClick={() => handleOpenConsent(job._id)}
                         style={styles.startButton}
                       >
                         Start Job
                       </button>
                       <button
-                        onClick={() => navigate(`/job/${job._id}`)}
+                        onClick={() => handleOpenJob(job._id)}
                         style={styles.viewButton}
                       >
                         Open
@@ -90,6 +107,10 @@ function TechDashboard() {
 }
 
 const styles = {
+  loading: {
+    padding: "20px",
+    fontFamily: "Arial, sans-serif",
+  },
   container: {
     maxWidth: "1400px",
     margin: "40px auto",
