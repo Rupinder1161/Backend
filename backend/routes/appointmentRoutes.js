@@ -4,7 +4,7 @@ const router = express.Router();
 
 const Appointment = require("../models/Appointment");
 const Customer = require("../models/Customer");
-// const Referrer = require("../models/Referrer");
+const Referrer = require("../models/Referrer");
 
 // Create appointment
 router.post("/", async (req, res) => {
