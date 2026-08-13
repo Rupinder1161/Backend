@@ -7,6 +7,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
+
 import Dashboard from "./components/Dashboard";
 import JobDetails from "./components/JobDetails";
 import BookAppointment from "./components/BookAppointment";
@@ -23,9 +24,9 @@ import ManageReferrers from "./components/ManageReferrers";
 function AppRoutes() {
   const { user, logout, loadingAuth } = React.useContext(AuthContext);
 
-if (loadingAuth) {
-  return <div style={{ padding: 20 }}>Loading...</div>;
-}
+  if (loadingAuth) {
+    return <div style={{ padding: 20 }}>Loading...</div>;
+  }
 
   return (
     <>
@@ -34,7 +35,7 @@ if (loadingAuth) {
           <span style={styles.brand}>SeniorTech Job Hub</span>
 
           <div style={styles.links}>
-            {user.role === "admin" || user.role === "seniorTech" ? (
+            {(user.role === "admin" || user.role === "seniorTech") && (
               <>
                 <Link to="/" style={styles.link}>
                   Dashboard
@@ -45,14 +46,24 @@ if (loadingAuth) {
                 <Link to="/customers" style={styles.link}>
                   Customers
                 </Link>
-
-                {user.role === "admin" && (
-                  <Link to="/users" style={styles.link}>
-                    Team Members
-                  </Link>
-                )}
+                <Link to="/referrers" style={styles.link}>
+                  Referrers
+                </Link>
               </>
-            ) : (
+            )}
+
+            {user.role === "admin" && (
+              <>
+                <Link to="/users" style={styles.link}>
+                  Team Members
+                </Link>
+                <Link to="/manage-referrers" style={styles.link}>
+                  Manage Referrers
+                </Link>
+              </>
+            )}
+
+            {user.role === "tech" && (
               <Link to="/tech" style={styles.link}>
                 My Jobs
               </Link>
@@ -140,24 +151,25 @@ if (loadingAuth) {
           }
         />
 
-        <Route path="*" element={<Navigate to="/login" />} />
         <Route
-  path="/referrers"
-  element={
-    <ProtectedRoute allowedRoles={["admin", "seniorTech"]}>
-      <ReferrerDashboard />
-    </ProtectedRoute>
-  }
-/>
+          path="/referrers"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "seniorTech"]}>
+              <ReferrerDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/manage-referrers"
-  element={
-    <ProtectedRoute allowedRoles={["admin"]}>
-      <ManageReferrers />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/manage-referrers"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ManageReferrers />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </>
   );
