@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Appointment = require("../models/Appointment");
 const Customer = require("../models/Customer");
+const axios = require("axios");
 
 // Create appointment
 router.post("/", async (req, res) => {
@@ -467,11 +468,22 @@ router.get("/address-check", async (req, res) => {
       return res.status(400).json({ message: "Address is required" });
     }
 
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+    const response = await axios.get(
+      "https://nominatim.openstreetmap.org/search",
+      {
+        params: {
+          format: "json",
+          q: address,
+          limit: 1,
+        },
+        headers: {
+          "User-Agent": "SeniorTechJobHub/1.0",
+          "Accept-Language": "en",
+        },
+      }
     );
 
-    const data = await response.json();
+    const data = response.data;
 
     if (!data || data.length === 0) {
       return res.json({
@@ -487,7 +499,12 @@ router.get("/address-check", async (req, res) => {
       lon: data[0].lon,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Address check error:", error.message);
+    res.status(500).json({
+      message: "Failed to check address",
+      error: error.message,
+    });
   }
 });
+
 module.exports = router;
