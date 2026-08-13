@@ -242,4 +242,72 @@ router.put("/:id/complete-job", async (req, res) => {
   }
 });
 
+// Close job properly
+router.put("/:id/close-job", async (req, res) => {
+  try {
+    const { finalNotes } = req.body;
+
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    appointment.finalNotes = finalNotes || appointment.finalNotes || "";
+    appointment.status = "Completed and Closed Successfully";
+
+    await appointment.save();
+
+    res.json({
+      message: "Job closed successfully",
+      appointment,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Fully archive as closed
+router.put("/:id/archive", async (req, res) => {
+  try {
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { status: "Closed" },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.json({
+      message: "Job archived as closed",
+      appointment,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Reopen a closed job
+router.put("/:id/reopen", async (req, res) => {
+  try {
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { status: "In Progress" },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.json({
+      message: "Job reopened",
+      appointment,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

@@ -11,6 +11,7 @@ function JobDetails() {
   const [workDone, setWorkDone] = useState("");
   const [completionType, setCompletionType] = useState("");
   const [revenue, setRevenue] = useState("");
+  const [finalNotes, setFinalNotes] = useState("");
   const [message, setMessage] = useState("");
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
@@ -24,6 +25,7 @@ function JobDetails() {
         setStatus(res.data.status || "Booked");
         setWorkDone(res.data.workDone || "");
         setCompletionType(res.data.completionType || "");
+        setFinalNotes(res.data.finalNotes || "");
       } catch (error) {
         console.error(error);
         setMessage("Failed to load job details.");
@@ -76,11 +78,42 @@ function JobDetails() {
     }
   };
 
+  const handleCloseJob = async () => {
+    try {
+      const res = await axios.put(`${apiUrl}/api/appointments/${id}/close-job`, {
+        finalNotes,
+      });
+
+      setAppointment(res.data.appointment);
+      setStatus(res.data.appointment.status);
+      setMessage("Job closed successfully.");
+    } catch (error) {
+      console.error(error);
+      setMessage("Failed to close job.");
+    }
+  };
+
+  const handleReopen = async () => {
+    try {
+      const res = await axios.put(`${apiUrl}/api/appointments/${id}/reopen`);
+      setAppointment(res.data.appointment);
+      setStatus(res.data.appointment.status);
+      setMessage("Job reopened successfully.");
+    } catch (error) {
+      console.error(error);
+      setMessage("Failed to reopen job.");
+    }
+  };
+
   const goToFeedback = () => {
     navigate(`/feedback/${id}`);
   };
 
   if (!appointment) return <p style={{ padding: "20px" }}>Loading job details...</p>;
+
+  const isClosed =
+    appointment.status === "Closed" ||
+    appointment.status === "Completed and Closed Successfully";
 
   return (
     <div style={styles.container}>
@@ -94,6 +127,19 @@ function JobDetails() {
         <p><strong>Issue Type:</strong> {appointment.issueType}</p>
         <p><strong>Description:</strong> {appointment.issueDescription}</p>
         <p><strong>Consent Accepted:</strong> {appointment.consentAccepted ? "Yes" : "No"}</p>
+        <p><strong>Status:</strong> {appointment.status}</p>
+      </div>
+
+      <div style={styles.card}>
+        <h3>How to Close the Job</h3>
+        <ol style={{ lineHeight: "1.8" }}>
+          <li>Confirm the repair/service is fully done.</li>
+          <li>Add the work completed notes.</li>
+          <li>Choose completed or partial completion if applicable.</li>
+          <li>Collect customer feedback if required.</li>
+          <li>Mark the job as <strong>Completed and Closed Successfully</strong>.</li>
+          <li>Use <strong>Close Job</strong> to archive it once fully done.</li>
+        </ol>
       </div>
 
       <div style={styles.card}>
@@ -105,9 +151,10 @@ function JobDetails() {
           <option value="Scheduled">Scheduled</option>
           <option value="Assigned">Assigned</option>
           <option value="In Progress">In Progress</option>
+          <option value="Needs Feedback">Needs Feedback</option>
           <option value="Completed">Completed</option>
           <option value="Partially Completed">Partially Completed</option>
-          <option value="Needs Feedback">Needs Feedback</option>
+          <option value="Completed and Closed Successfully">Completed and Closed Successfully</option>
           <option value="Closed">Closed</option>
           <option value="Cancelled">Cancelled</option>
         </select>
@@ -140,6 +187,14 @@ function JobDetails() {
           style={styles.input}
         />
 
+        <label>Final Closing Notes</label>
+        <textarea
+          value={finalNotes}
+          onChange={(e) => setFinalNotes(e.target.value)}
+          placeholder="Add final close-out notes..."
+          style={styles.textarea}
+        />
+
         <button onClick={handleSave} style={styles.button}>
           Save Job Update
         </button>
@@ -147,6 +202,16 @@ function JobDetails() {
         <button onClick={handleCompleteJob} style={styles.completeButton}>
           Complete Job
         </button>
+
+        <button onClick={handleCloseJob} style={styles.closeButton}>
+          Close Job
+        </button>
+
+        {isClosed && (
+          <button onClick={handleReopen} style={styles.reopenButton}>
+            Reopen Job
+          </button>
+        )}
       </div>
 
       {message && <p>{message}</p>}
@@ -211,6 +276,7 @@ const styles = {
     color: "white",
     cursor: "pointer",
     marginRight: "10px",
+    marginBottom: "10px",
   },
   completeButton: {
     padding: "12px 18px",
@@ -219,6 +285,27 @@ const styles = {
     background: "#28a745",
     color: "white",
     cursor: "pointer",
+    marginRight: "10px",
+    marginBottom: "10px",
+  },
+  closeButton: {
+    padding: "12px 18px",
+    border: "none",
+    borderRadius: "8px",
+    background: "#6c757d",
+    color: "white",
+    cursor: "pointer",
+    marginRight: "10px",
+    marginBottom: "10px",
+  },
+  reopenButton: {
+    padding: "12px 18px",
+    border: "none",
+    borderRadius: "8px",
+    background: "#dc3545",
+    color: "white",
+    cursor: "pointer",
+    marginBottom: "10px",
   },
   popupOverlay: {
     position: "fixed",

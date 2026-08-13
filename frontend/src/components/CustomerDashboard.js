@@ -55,6 +55,13 @@ function CustomerDashboard() {
     return true;
   });
 
+  const getContactBadge = (status) => {
+    if (status === "replied") return styles.badgeGreen;
+    if (status === "no reply") return styles.badgeRed;
+    if (status === "contacted") return styles.badgeBlue;
+    return styles.badgeGray;
+  };
+
   return (
     <div style={styles.container}>
       <h1>Customer Dashboard</h1>
@@ -120,12 +127,12 @@ function CustomerDashboard() {
                 <th style={styles.headerCell}>Email</th>
                 <th style={styles.headerCell}>Address</th>
                 <th style={styles.headerCell}>Device</th>
-                <th style={styles.headerCell}>Total Services</th>
-                <th style={styles.headerCell}>Total Revenue</th>
+                <th style={styles.headerCell}>Services</th>
+                <th style={styles.headerCell}>Revenue</th>
                 <th style={styles.headerCell}>Last Service</th>
                 <th style={styles.headerCell}>Days Since</th>
                 <th style={styles.headerCell}>Ready?</th>
-                <th style={styles.headerCell}>Last Contact</th>
+                <th style={styles.headerCell}>Contact Status</th>
                 <th style={styles.headerCell}>Actions</th>
               </tr>
             </thead>
@@ -134,6 +141,11 @@ function CustomerDashboard() {
                 <tr
                   key={customer._id}
                   style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#eef6ff")}
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      index % 2 === 0 ? "#f8fbff" : "#ffffff")
+                  }
                 >
                   <td style={styles.cell}>{customer.name}</td>
                   <td style={styles.cell}>{customer.phone}</td>
@@ -151,14 +163,25 @@ function CustomerDashboard() {
                     {customer.daysSinceLastService ?? "N/A"}
                   </td>
                   <td style={styles.cell}>
-                    {customer.readyToContact ? "Yes" : "No"}
+                    <span
+                      style={
+                        customer.readyToContact
+                          ? styles.badgeGreen
+                          : styles.badgeGray
+                      }
+                    >
+                      {customer.readyToContact ? "Yes" : "No"}
+                    </span>
                   </td>
                   <td style={styles.cell}>
-                    {customer.lastContactStatus || "N/A"}
-                    <br />
-                    {customer.lastContactedDate
-                      ? new Date(customer.lastContactedDate).toLocaleDateString()
-                      : ""}
+                    <span style={getContactBadge(customer.lastContactStatus)}>
+                      {customer.lastContactStatus || "none"}
+                    </span>
+                    <div style={{ marginTop: "6px", fontSize: "12px", color: "#666" }}>
+                      {customer.lastContactedDate
+                        ? new Date(customer.lastContactedDate).toLocaleDateString()
+                        : ""}
+                    </div>
                   </td>
                   <td style={styles.cell}>
                     <div style={styles.buttons}>
@@ -269,7 +292,7 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    minWidth: "1200px",
+    minWidth: "1300px",
   },
   headerCell: {
     padding: "14px 12px",
@@ -277,6 +300,9 @@ const styles = {
     borderBottom: "2px solid #d1d5db",
     textAlign: "left",
     whiteSpace: "nowrap",
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
   },
   cell: {
     padding: "14px 12px",
@@ -317,6 +343,46 @@ const styles = {
     background: "#6c757d",
     color: "#fff",
     cursor: "pointer",
+  },
+  badgeGreen: {
+    display: "inline-block",
+    padding: "6px 10px",
+    borderRadius: "999px",
+    background: "#dcfce7",
+    color: "#166534",
+    fontSize: "12px",
+    fontWeight: "600",
+    textTransform: "capitalize",
+  },
+  badgeRed: {
+    display: "inline-block",
+    padding: "6px 10px",
+    borderRadius: "999px",
+    background: "#fee2e2",
+    color: "#991b1b",
+    fontSize: "12px",
+    fontWeight: "600",
+    textTransform: "capitalize",
+  },
+  badgeBlue: {
+    display: "inline-block",
+    padding: "6px 10px",
+    borderRadius: "999px",
+    background: "#dbeafe",
+    color: "#1d4ed8",
+    fontSize: "12px",
+    fontWeight: "600",
+    textTransform: "capitalize",
+  },
+  badgeGray: {
+    display: "inline-block",
+    padding: "6px 10px",
+    borderRadius: "999px",
+    background: "#e5e7eb",
+    color: "#374151",
+    fontSize: "12px",
+    fontWeight: "600",
+    textTransform: "capitalize",
   },
 };
 
