@@ -9,8 +9,7 @@ function ReferrerDashboard() {
   const [message, setMessage] = useState("");
   const [payoutInputs, setPayoutInputs] = useState({});
 
-  useEffect(() => {
-  const fetchReferrers = async () => {
+  const loadReferrers = async () => {
     try {
       const res = await axios.get(`${apiUrl}/api/referrers`);
       setReferrers(res.data || []);
@@ -22,14 +21,8 @@ function ReferrerDashboard() {
     }
   };
 
-  fetchReferrers();
-}, [apiUrl]);
-
-useEffect(() => {
-  fetchReferrers();
-}, []);
   useEffect(() => {
-    fetchReferrers();
+    loadReferrers();
   }, []);
 
   const handlePayoutChange = (id, value) => {
@@ -57,7 +50,8 @@ useEffect(() => {
         ...payoutInputs,
         [id]: "",
       });
-      fetchReferrers();
+
+      await loadReferrers();
     } catch (error) {
       console.error(error);
       setMessage("Failed to update payout.");

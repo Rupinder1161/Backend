@@ -14,8 +14,7 @@ function ManageReferrers() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-  const fetchReferrers = async () => {
+  const loadReferrers = async () => {
     try {
       const res = await axios.get(`${apiUrl}/api/referrers`);
       setReferrers(res.data || []);
@@ -27,11 +26,8 @@ function ManageReferrers() {
     }
   };
 
-  fetchReferrers();
-}, [apiUrl]);
-
   useEffect(() => {
-    fetchReferrers();
+    loadReferrers();
   }, []);
 
   const handleChange = (e) => {
@@ -52,7 +48,7 @@ function ManageReferrers() {
         email: "",
         referralCode: "",
       });
-      fetchReferrers();
+      await loadReferrers();
     } catch (error) {
       console.error(error);
       setMessage(error.response?.data?.message || "Failed to create referrer.");
@@ -126,7 +122,10 @@ function ManageReferrers() {
             </thead>
             <tbody>
               {referrers.map((r, index) => (
-                <tr key={r._id} style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}>
+                <tr
+                  key={r._id}
+                  style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}
+                >
                   <td style={styles.td}>{r.name}</td>
                   <td style={styles.td}>{r.phone}</td>
                   <td style={styles.td}>{r.referralCode}</td>
