@@ -458,4 +458,36 @@ router.put("/:id/timeline", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+router.get("/address-check", async (req, res) => {
+  try {
+    const { address } = req.query;
+
+    if (!address) {
+      return res.status(400).json({ message: "Address is required" });
+    }
+
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+    );
+
+    const data = await response.json();
+
+    if (!data || data.length === 0) {
+      return res.json({
+        valid: false,
+        message: "Address not found",
+      });
+    }
+
+    res.json({
+      valid: true,
+      formattedAddress: data[0].display_name,
+      lat: data[0].lat,
+      lon: data[0].lon,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

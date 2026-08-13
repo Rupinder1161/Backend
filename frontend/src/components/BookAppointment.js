@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./BookAppointment.css";
 
+
 function BookAppointment() {
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -18,6 +19,8 @@ function BookAppointment() {
   });
 
   const [message, setMessage] = useState("");
+  const [addressCheckMessage, setAddressCheckMessage] = useState("");
+const [addressValid, setAddressValid] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -49,6 +52,32 @@ function BookAppointment() {
     }
   };
 
+  const handleCheckAddress = async () => {
+  try {
+    setAddressCheckMessage("Checking address...");
+    setAddressValid(null);
+
+    const apiUrl = process.env.REACT_APP_API_URL;
+
+    const res = await axios.get(`${apiUrl}/api/appointments/address-check`, {
+      params: {
+        address: formData.address,
+      },
+    });
+
+    if (res.data.valid) {
+      setAddressValid(true);
+      setAddressCheckMessage(`Valid address: ${res.data.formattedAddress}`);
+    } else {
+      setAddressValid(false);
+      setAddressCheckMessage(res.data.message || "Address not found");
+    }
+  } catch (error) {
+    console.error(error);
+    setAddressValid(false);
+    setAddressCheckMessage("Failed to check address.");
+  }
+};
   return (
   <div className="booking-container">
     <div className="booking-card">
@@ -93,7 +122,31 @@ function BookAppointment() {
             onChange={handleChange}
             required
           />
+           <div style={styles.addressRow}>
+  <input
+    type="text"
+    name="address"
+    placeholder="Address"
+    value={formData.address}
+    onChange={handleChange}
+    required
+    style={styles.addressInput}
+  />
 
+  <button
+    type="button"
+    onClick={handleCheckAddress}
+    style={styles.checkButton}
+  >
+    Check Address
+  </button>
+</div>
+
+{addressCheckMessage && (
+  <p style={{ color: addressValid ? "green" : "red", marginTop: "8px" }}>
+    {addressCheckMessage}
+  </p>
+)}
           <select
             name="issueType"
             value={formData.issueType}
@@ -152,4 +205,23 @@ function BookAppointment() {
 );
 }
 
+const styles = {
+  addressRow: {
+    display: "flex",
+    gap: "10px",
+    alignItems: "center",
+  },
+  addressInput: {
+    flex: 1,
+  },
+  checkButton: {
+    padding: "12px 16px",
+    border: "none",
+    borderRadius: "8px",
+    background: "#111827",
+    color: "white",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+};
 export default BookAppointment;
