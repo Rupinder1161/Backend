@@ -1,5 +1,11 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+} from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import Dashboard from "./components/Dashboard";
 import JobDetails from "./components/JobDetails";
@@ -8,6 +14,7 @@ import Feedback from "./components/Feedback";
 import CustomerDashboard from "./components/CustomerDashboard";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import UserManagement from "./components/UserManagement";
 
 function AppRoutes() {
   const { user, logout } = React.useContext(AuthContext);
@@ -15,38 +22,36 @@ function AppRoutes() {
   return (
     <>
       {user && (
-        <nav style={{ padding: "15px", background: "#222", color: "#fff" }}>
-          <span style={{ fontWeight: "bold", marginRight: "20px" }}>
-            SeniorTech Job Hub
-          </span>
-          {user.role === "admin" || user.role === "seniorTech" ? (
-            <>
-              <Link to="/" style={{ color: "#fff", marginRight: "15px" }}>
-                Dashboard
-              </Link>
-              <Link to="/book-appointment" style={{ color: "#fff", marginRight: "15px" }}>
-                Book Appointment
-              </Link>
-              <Link to="/customers" style={{ color: "#fff", marginRight: "15px" }}>
-                Customers
-              </Link>
-            </>
-          ) : (
-            <Link to="/tech" style={{ color: "#fff", marginRight: "15px" }}>
-              My Jobs
-            </Link>
-          )}
+        <nav style={styles.nav}>
+          <span style={styles.brand}>SeniorTech Job Hub</span>
 
-          <button
-            onClick={logout}
-            style={{
-              marginLeft: "20px",
-              padding: "8px 12px",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
+          <div style={styles.links}>
+            {user.role === "admin" || user.role === "seniorTech" ? (
+              <>
+                <Link to="/" style={styles.link}>
+                  Dashboard
+                </Link>
+                <Link to="/book-appointment" style={styles.link}>
+                  Book Appointment
+                </Link>
+                <Link to="/customers" style={styles.link}>
+                  Customers
+                </Link>
+
+                {user.role === "admin" && (
+                  <Link to="/users" style={styles.link}>
+                    Team Members
+                  </Link>
+                )}
+              </>
+            ) : (
+              <Link to="/tech" style={styles.link}>
+                My Jobs
+              </Link>
+            )}
+          </div>
+
+          <button onClick={logout} style={styles.logoutButton}>
             Logout
           </button>
         </nav>
@@ -78,6 +83,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={["admin", "seniorTech"]}>
               <CustomerDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <UserManagement />
             </ProtectedRoute>
           }
         />
@@ -124,5 +138,42 @@ function App() {
     </AuthProvider>
   );
 }
+
+const styles = {
+  nav: {
+    padding: "15px 20px",
+    background: "#222",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+    flexWrap: "wrap",
+  },
+  brand: {
+    fontWeight: "bold",
+    fontSize: "18px",
+    marginRight: "10px",
+  },
+  links: {
+    display: "flex",
+    gap: "15px",
+    flexWrap: "wrap",
+    flex: 1,
+  },
+  link: {
+    color: "#fff",
+    textDecoration: "none",
+    fontWeight: "500",
+  },
+  logoutButton: {
+    padding: "8px 12px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    background: "#f3f4f6",
+    color: "#111827",
+    fontWeight: "600",
+  },
+};
 
 export default App;
