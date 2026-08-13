@@ -14,6 +14,7 @@ function ManageReferrers() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
   const fetchReferrers = async () => {
     try {
       const res = await axios.get(`${apiUrl}/api/referrers`);
@@ -25,6 +26,9 @@ function ManageReferrers() {
       setLoading(false);
     }
   };
+
+  fetchReferrers();
+}, [apiUrl]);
 
   useEffect(() => {
     fetchReferrers();

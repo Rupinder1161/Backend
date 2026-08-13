@@ -9,6 +9,7 @@ function ReferrerDashboard() {
   const [message, setMessage] = useState("");
   const [payoutInputs, setPayoutInputs] = useState({});
 
+  useEffect(() => {
   const fetchReferrers = async () => {
     try {
       const res = await axios.get(`${apiUrl}/api/referrers`);
@@ -21,6 +22,12 @@ function ReferrerDashboard() {
     }
   };
 
+  fetchReferrers();
+}, [apiUrl]);
+
+useEffect(() => {
+  fetchReferrers();
+}, []);
   useEffect(() => {
     fetchReferrers();
   }, []);
