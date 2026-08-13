@@ -22,8 +22,6 @@ function JobDetails() {
   const apiUrl = process.env.REACT_APP_API_URL;
   const isAdmin = user?.role === "admin" || user?.role === "seniorTech";
   const isTech = user?.role === "tech";
-  const [timelineAction, setTimelineAction] = useState("");
-const [timelineNote, setTimelineNote] = useState("");
 
   useEffect(() => {
     const fetchAppointment = async () => {
@@ -76,25 +74,6 @@ const [timelineNote, setTimelineNote] = useState("");
       setMessage("Failed to assign tech.");
     }
   };
-
-
-  const handleAddTimeline = async () => {
-  try {
-    const res = await axios.put(`${apiUrl}/api/appointments/${id}/timeline`, {
-      action: timelineAction,
-      note: timelineNote,
-      createdBy: user?.id || user?._id,
-    });
-
-    setAppointment(res.data.appointment);
-    setTimelineAction("");
-    setTimelineNote("");
-    setMessage("Timeline entry added.");
-  } catch (error) {
-    console.error(error);
-    setMessage(error.response?.data?.message || "Failed to add timeline entry.");
-  }
-};
   const handleSave = async () => {
     try {
       const res = await axios.put(`${apiUrl}/api/appointments/${id}/job-update`, {
@@ -168,10 +147,6 @@ const [timelineNote, setTimelineNote] = useState("");
 
   const goToFeedback = () => {
     navigate(`/feedback/${id}`);
-  };
-
-  const goToConsent = () => {
-    navigate(`/job/${id}/consent`);
   };
 
   if (!appointment) return <p style={{ padding: "20px" }}>Loading job details...</p>;
