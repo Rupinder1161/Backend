@@ -17,6 +17,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UserManagement from "./components/UserManagement";
 import TechDashboard from "./components/TechDashboard";
 import ConsentPage from "./components/ConsentPage";
+import ReferrerDashboard from "./components/ReferrerDashboard";
+import ManageReferrers from "./components/ManageReferrers";
 
 function AppRoutes() {
   const { user, logout, loadingAuth } = React.useContext(AuthContext);
@@ -139,6 +141,23 @@ if (loadingAuth) {
         />
 
         <Route path="*" element={<Navigate to="/login" />} />
+        <Route
+  path="/referrers"
+  element={
+    <ProtectedRoute allowedRoles={["admin", "seniorTech"]}>
+      <ReferrerDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/manage-referrers"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <ManageReferrers />
+    </ProtectedRoute>
+  }
+/>
       </Routes>
     </>
   );

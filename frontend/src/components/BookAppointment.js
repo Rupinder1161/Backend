@@ -15,6 +15,7 @@ function BookAppointment() {
     issueDescription: "",
     preferredDate: "",
     preferredTime: "",
+    referralCode: "",
     consentAccepted: false,
   });
 
@@ -132,7 +133,13 @@ const [addressValid, setAddressValid] = useState(null);
     required
     style={styles.addressInput}
   />
-
+<input
+  type="text"
+  name="referralCode"
+  placeholder="Referral Code (optional)"
+  value={formData.referralCode}
+  onChange={handleChange}
+/>
   <button
     type="button"
     onClick={handleCheckAddress}

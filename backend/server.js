@@ -6,6 +6,7 @@ const appointmentRoutes = require("./routes/appointmentRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const authRoutes = require("./routes/authRoutes");
 
+const referrerRoutes = require("./routes/referrerRoutes");
 dotenv.config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.get("/", (req, res) => {
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/referrers", referrerRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -80,6 +80,20 @@ const appointmentSchema = new mongoose.Schema(
 
     needsFollowUp: { type: Boolean, default: false },
     followUpReason: { type: String, default: "" },
+
+    // Referral tracking
+    referralCode: { type: String, default: "" },
+    referrer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Referrer",
+      default: null,
+    },
+    referralStatus: {
+      type: String,
+      enum: ["", "referred", "scheduled", "successful", "unsuccessful"],
+      default: "",
+    },
+    referralRewardGiven: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
