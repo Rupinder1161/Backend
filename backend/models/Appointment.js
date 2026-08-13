@@ -19,6 +19,9 @@ const appointmentSchema = new mongoose.Schema(
 
     consentAccepted: { type: Boolean, required: true, default: false },
     consentTextVersion: { type: String, default: "v1" },
+    consentAcceptedByCustomer: { type: Boolean, default: false },
+consentAcceptedAt: { type: Date, default: null },
+consentNotesVersion: { type: String, default: "v1" },
 
     status: {
       type: String,

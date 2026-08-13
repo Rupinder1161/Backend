@@ -365,4 +365,34 @@ router.put("/:id/assign-tech", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+router.put("/:id/start-with-consent", async (req, res) => {
+  try {
+    const { consentAcceptedByCustomer, consentNotesVersion } = req.body;
+
+    if (!consentAcceptedByCustomer) {
+      return res.status(400).json({ message: "Customer must accept consent before starting the job." });
+    }
+
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    appointment.consentAcceptedByCustomer = true;
+    appointment.consentAcceptedAt = new Date();
+    appointment.consentNotesVersion = consentNotesVersion || "v1";
+    appointment.status = "In Progress";
+    appointment.startTime = new Date();
+
+    await appointment.save();
+
+    res.json({
+      message: "Job started with customer consent",
+      appointment,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;
