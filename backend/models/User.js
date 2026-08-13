@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "seniorTech", "tech"],
       default: "tech",
     },
+    active: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
