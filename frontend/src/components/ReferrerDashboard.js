@@ -7,7 +7,7 @@ function ReferrerDashboard() {
   const { user } = useContext(AuthContext);
 
   const [referrer, setReferrer] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
  useEffect(() => {
