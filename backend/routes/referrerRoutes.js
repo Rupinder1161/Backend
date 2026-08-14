@@ -55,6 +55,7 @@ router.post("/", async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Create referrer error:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -62,9 +63,10 @@ router.post("/", async (req, res) => {
 // Get all referrers
 router.get("/", async (req, res) => {
   try {
-    const referrers = await Referrer.find().populate("userId", "name email role");
+    const referrers = await Referrer.find().sort({ createdAt: -1 });
     res.json(referrers);
   } catch (error) {
+    console.error("Get referrers error:", error);
     res.status(500).json({ message: error.message });
   }
 });

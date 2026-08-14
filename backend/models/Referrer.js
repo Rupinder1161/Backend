@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const referrerSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     name: { type: String, required: true },
     phone: { type: String, required: true },
     email: { type: String },

@@ -39,25 +39,29 @@ function ManageReferrers() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${apiUrl}/api/referrers`, formData);
-      setMessage("Referrer and login created successfully!");
-      setFormData({
-        name: "",
-        phone: "",
-        email: "",
-        referralCode: "",
-        password: "",
-      });
+  e.preventDefault();
+  try {
+    const res = await axios.post(`${apiUrl}/api/referrers`, formData);
 
-      const res = await axios.get(`${apiUrl}/api/referrers`);
-      setReferrers(res.data || []);
-    } catch (error) {
-      console.error(error);
-      setMessage(error.response?.data?.message || "Failed to create referrer.");
-    }
-  };
+    setMessage(
+      `Referrer created successfully! Referral Code: ${res.data.referrer.referralCode}`
+    );
+
+    setFormData({
+      name: "",
+      phone: "",
+      email: "",
+      referralCode: "",
+      password: "",
+    });
+
+    const listRes = await axios.get(`${apiUrl}/api/referrers`);
+    setReferrers(listRes.data || []);
+  } catch (error) {
+    console.error(error);
+    setMessage(error.response?.data?.message || "Failed to create referrer.");
+  }
+};
 
   return (
     <div style={styles.container}>
