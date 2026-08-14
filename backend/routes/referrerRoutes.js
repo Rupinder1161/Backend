@@ -60,6 +60,53 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Login referrer
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    if (user.role !== "referrer") {
+      return res.status(403).json({ message: "This account is not registered as a referrer" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    const referrer = await Referrer.findOne({ userId: user._id }).populate("userId", "name email role");
+
+    if (!referrer) {
+      return res.status(404).json({ message: "Referrer profile not found" });
+    }
+
+    res.json({
+      message: "Referrer login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      referrer,
+    });
+  } catch (error) {
+    console.error("Referrer login error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Get all referrers
 router.get("/", async (req, res) => {
   try {
