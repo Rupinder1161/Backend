@@ -14,21 +14,21 @@ function ManageReferrers() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const loadReferrers = async () => {
-    try {
-      const res = await axios.get(`${apiUrl}/api/referrers`);
-      setReferrers(res.data || []);
-    } catch (error) {
-      console.error(error);
-      setMessage("Failed to load referrers.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadReferrers = async () => {
+      try {
+        const res = await axios.get(`${apiUrl}/api/referrers`);
+        setReferrers(res.data || []);
+      } catch (error) {
+        console.error(error);
+        setMessage("Failed to load referrers.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadReferrers();
-  }, []);
+  }, [apiUrl]);
 
   const handleChange = (e) => {
     setFormData({
@@ -48,7 +48,9 @@ function ManageReferrers() {
         email: "",
         referralCode: "",
       });
-      await loadReferrers();
+
+      const res = await axios.get(`${apiUrl}/api/referrers`);
+      setReferrers(res.data || []);
     } catch (error) {
       console.error(error);
       setMessage(error.response?.data?.message || "Failed to create referrer.");
