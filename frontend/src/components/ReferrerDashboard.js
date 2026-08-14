@@ -138,7 +138,7 @@ function ReferrerDashboard() {
                     style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}
                   >
                     <td style={styles.td}>{appt.customerName}</td>
-                    <td style={styles.td}>{appt.phone}</td>
+                    {/* <td style={styles.td}>{appt.phone}</td> */}
                     <td style={styles.td}>{appt.issueType}</td>
                     <td style={styles.td}>{appt.referralStatus || "referred"}</td>
                     <td style={styles.td}>{appt.status}</td>
