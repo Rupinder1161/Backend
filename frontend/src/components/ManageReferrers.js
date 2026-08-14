@@ -12,6 +12,8 @@ function ManageReferrers() {
     referralCode: "",
     password: "",
   });
+
+  const [passwordUpdates, setPasswordUpdates] = useState({});
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -39,29 +41,55 @@ function ManageReferrers() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await axios.post(`${apiUrl}/api/referrers`, formData);
+    e.preventDefault();
+    try {
+      await axios.post(`${apiUrl}/api/referrers`, formData);
+      setMessage("Referrer and login created successfully!");
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        referralCode: "",
+        password: "",
+      });
 
-    setMessage(
-      `Referrer created successfully! Referral Code: ${res.data.referrer.referralCode}`
-    );
+      const res = await axios.get(`${apiUrl}/api/referrers`);
+      setReferrers(res.data || []);
+    } catch (error) {
+      console.error(error);
+      setMessage(error.response?.data?.message || "Failed to create referrer.");
+    }
+  };
 
-    setFormData({
-      name: "",
-      phone: "",
-      email: "",
-      referralCode: "",
-      password: "",
+  const handlePasswordChange = (id, value) => {
+    setPasswordUpdates({
+      ...passwordUpdates,
+      [id]: value,
     });
+  };
 
-    const listRes = await axios.get(`${apiUrl}/api/referrers`);
-    setReferrers(listRes.data || []);
-  } catch (error) {
-    console.error(error);
-    setMessage(error.response?.data?.message || "Failed to create referrer.");
-  }
-};
+  const handlePasswordUpdate = async (id) => {
+    try {
+      const newPassword = passwordUpdates[id];
+      if (!newPassword) {
+        setMessage("Please enter a new password.");
+        return;
+      }
+
+      await axios.put(`${apiUrl}/api/referrers/${id}/password`, {
+        password: newPassword,
+      });
+
+      setMessage("Referrer password updated successfully!");
+      setPasswordUpdates({
+        ...passwordUpdates,
+        [id]: "",
+      });
+    } catch (error) {
+      console.error(error);
+      setMessage(error.response?.data?.message || "Failed to update password.");
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -128,31 +156,38 @@ function ManageReferrers() {
         ) : referrers.length === 0 ? (
           <p>No referrers found.</p>
         ) : (
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Name</th>
-                <th style={styles.th}>Phone</th>
-                <th style={styles.th}>Code</th>
-                <th style={styles.th}>Revenue</th>
-                <th style={styles.th}>Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {referrers.map((r, index) => (
-                <tr
-                  key={r._id}
-                  style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}
-                >
-                  <td style={styles.td}>{r.name}</td>
-                  <td style={styles.td}>{r.phone}</td>
-                  <td style={styles.td}>{r.referralCode}</td>
-                  <td style={styles.td}>${r.totalRevenue}</td>
-                  <td style={styles.td}>${r.balance}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={styles.list}>
+            {referrers.map((r, index) => (
+              <div
+                key={r._id}
+                style={index % 2 === 0 ? styles.referrerCardLight : styles.referrerCardWhite}
+              >
+                <h3>{r.name}</h3>
+                <p><strong>Email:</strong> {r.email}</p>
+                <p><strong>Phone:</strong> {r.phone}</p>
+                <p><strong>Code:</strong> {r.referralCode}</p>
+                <p><strong>Total Revenue:</strong> ${r.totalRevenue}</p>
+                <p><strong>Balance:</strong> ${r.balance}</p>
+
+                <div style={styles.passwordBox}>
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    value={passwordUpdates[r._id] || ""}
+                    onChange={(e) => handlePasswordChange(r._id, e.target.value)}
+                    style={styles.input}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handlePasswordUpdate(r._id)}
+                    style={styles.updateButton}
+                  >
+                    Update Password
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
@@ -185,6 +220,8 @@ const styles = {
     padding: "12px",
     borderRadius: "8px",
     border: "1px solid #ccc",
+    width: "100%",
+    boxSizing: "border-box",
   },
   button: {
     padding: "12px 18px",
@@ -195,26 +232,37 @@ const styles = {
     cursor: "pointer",
     gridColumn: "1 / -1",
   },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
+  list: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
     marginTop: "16px",
   },
-  th: {
-    textAlign: "left",
-    padding: "12px",
-    background: "#f3f4f6",
-    borderBottom: "2px solid #d1d5db",
+  referrerCardLight: {
+    background: "#f8fbff",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "1px solid #e5e7eb",
   },
-  td: {
-    padding: "12px",
-    borderBottom: "1px solid #e5e7eb",
+  referrerCardWhite: {
+    background: "#ffffff",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "1px solid #e5e7eb",
   },
-  rowLight: {
-    backgroundColor: "#f8fbff",
+  passwordBox: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+    marginTop: "12px",
   },
-  rowWhite: {
-    backgroundColor: "#ffffff",
+  updateButton: {
+    padding: "12px 16px",
+    border: "none",
+    borderRadius: "8px",
+    background: "#111827",
+    color: "#fff",
+    cursor: "pointer",
   },
 };
 

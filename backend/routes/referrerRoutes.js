@@ -185,4 +185,34 @@ router.get("/email/:email", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+router.put("/:id/password", async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const referrer = await Referrer.findById(req.params.id);
+    if (!referrer) {
+      return res.status(404).json({ message: "Referrer not found" });
+    }
+
+    if (!referrer.userId) {
+      return res.status(400).json({ message: "No linked login user found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await User.findByIdAndUpdate(referrer.userId, {
+      password: hashedPassword,
+    });
+
+    res.json({ message: "Referrer password updated successfully" });
+  } catch (error) {
+    console.error("Update referrer password error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;
