@@ -1,164 +1,148 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 function ReferrerDashboard() {
   const apiUrl = process.env.REACT_APP_API_URL;
+  const { user } = useContext(AuthContext);
 
-  const [referrers, setReferrers] = useState([]);
+  const [referrer, setReferrer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [payoutInputs, setPayoutInputs] = useState({});
 
   useEffect(() => {
-    const loadReferrers = async () => {
+    const fetchMyReferrer = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/api/referrers`);
-        setReferrers(res.data || []);
+        if (!user?.id && !user?._id) return;
+
+        const userId = user?.id || user?._id;
+
+        const res = await axios.get(`${apiUrl}/api/referrers/me/${userId}`);
+        setReferrer(res.data);
       } catch (error) {
-        console.error("Error fetching referrers:", error);
-        setMessage("Failed to load referrers.");
+        console.error("Error fetching referrer:", error);
+        setMessage(
+          error.response?.data?.message || "Failed to load your referrer dashboard."
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    loadReferrers();
-  }, [apiUrl]);
-
-  const handlePayoutChange = (id, value) => {
-    setPayoutInputs({
-      ...payoutInputs,
-      [id]: value,
-    });
-  };
-
-  const handlePayout = async (id) => {
-    try {
-      const paidAmount = payoutInputs[id];
-
-      if (!paidAmount) {
-        setMessage("Please enter a payout amount.");
-        return;
-      }
-
-      await axios.put(`${apiUrl}/api/referrers/${id}/payout`, {
-        paidAmount,
-      });
-
-      setMessage("Payout updated successfully!");
-      setPayoutInputs({
-        ...payoutInputs,
-        [id]: "",
-      });
-
-      const res = await axios.get(`${apiUrl}/api/referrers`);
-      setReferrers(res.data || []);
-    } catch (error) {
-      console.error(error);
-      setMessage("Failed to update payout.");
+    if (user) {
+      fetchMyReferrer();
     }
-  };
+  }, [apiUrl, user]);
+
+  if (loading) {
+    return <div style={styles.container}>Loading referrer dashboard...</div>;
+  }
+
+  if (!referrer) {
+    return (
+      <div style={styles.container}>
+        <h1>Referrer Dashboard</h1>
+        <p>{message || "No referrer profile linked to your account yet."}</p>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
-      <h1>Referrer Dashboard</h1>
+      <div style={styles.headerCard}>
+        <h1>Referrer Dashboard</h1>
+        <p style={styles.subtitle}>
+          Welcome, {referrer.name}. Here are your referral earnings and activity.
+        </p>
+      </div>
 
-      {message && <p>{message}</p>}
-
-      {loading ? (
-        <p>Loading referrers...</p>
-      ) : referrers.length === 0 ? (
-        <p>No referrers found.</p>
-      ) : (
-        <div style={styles.grid}>
-          {referrers.map((referrer, index) => (
-            <div
-              key={referrer._id}
-              style={index % 2 === 0 ? styles.cardLight : styles.cardWhite}
-            >
-              <h3>{referrer.name}</h3>
-              <p><strong>Phone:</strong> {referrer.phone}</p>
-              <p><strong>Email:</strong> {referrer.email || "N/A"}</p>
-              <p><strong>Code:</strong> {referrer.referralCode}</p>
-
-              <p><strong>Total Referrals:</strong> {referrer.totalReferrals}</p>
-              <p><strong>Scheduled:</strong> {referrer.scheduledReferrals}</p>
-              <p><strong>Successful:</strong> {referrer.successfulReferrals}</p>
-              <p><strong>Unsuccessful:</strong> {referrer.unsuccessfulReferrals}</p>
-
-              <p><strong>Total Revenue:</strong> ${referrer.totalRevenue}</p>
-              <p><strong>Paid Out:</strong> ${referrer.paidOut}</p>
-              <p><strong>Balance:</strong> ${referrer.balance}</p>
-
-              <div style={styles.payoutBox}>
-                <input
-                  type="number"
-                  placeholder="Payout amount"
-                  value={payoutInputs[referrer._id] || ""}
-                  onChange={(e) =>
-                    handlePayoutChange(referrer._id, e.target.value)
-                  }
-                  style={styles.input}
-                />
-                <button
-                  onClick={() => handlePayout(referrer._id)}
-                  style={styles.button}
-                >
-                  Add Payout
-                </button>
-              </div>
-            </div>
-          ))}
+      <div style={styles.grid}>
+        <div style={styles.card}>
+          <h3>Your Code</h3>
+          <p style={styles.bigText}>{referrer.referralCode}</p>
         </div>
-      )}
+
+        <div style={styles.card}>
+          <h3>Total Referrals</h3>
+          <p style={styles.bigText}>{referrer.totalReferrals}</p>
+        </div>
+
+        <div style={styles.card}>
+          <h3>Scheduled</h3>
+          <p style={styles.bigText}>{referrer.scheduledReferrals}</p>
+        </div>
+
+        <div style={styles.card}>
+          <h3>Successful</h3>
+          <p style={styles.bigText}>{referrer.successfulReferrals}</p>
+        </div>
+
+        <div style={styles.card}>
+          <h3>Total Earned</h3>
+          <p style={styles.bigText}>${referrer.totalRevenue}</p>
+        </div>
+
+        <div style={styles.card}>
+          <h3>Paid Out</h3>
+          <p style={styles.bigText}>${referrer.paidOut}</p>
+        </div>
+
+        <div style={styles.card}>
+          <h3>Balance</h3>
+          <p style={styles.bigText}>${referrer.balance}</p>
+        </div>
+      </div>
+
+      <div style={styles.cardWide}>
+        <h3>Account Details</h3>
+        <p><strong>Name:</strong> {referrer.name}</p>
+        <p><strong>Phone:</strong> {referrer.phone}</p>
+        <p><strong>Email:</strong> {referrer.email || "N/A"}</p>
+      </div>
     </div>
   );
 }
 
 const styles = {
   container: {
-    maxWidth: "1400px",
+    maxWidth: "1200px",
     margin: "40px auto",
     padding: "20px",
     fontFamily: "Arial, sans-serif",
   },
+  headerCard: {
+    background: "#fff",
+    padding: "20px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    marginBottom: "20px",
+  },
+  subtitle: {
+    color: "#6b7280",
+    marginTop: "8px",
+  },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-    gap: "20px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "16px",
+    marginBottom: "20px",
   },
-  cardLight: {
+  card: {
     background: "#f8fbff",
+    padding: "18px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+  },
+  cardWide: {
+    background: "#fff",
     padding: "20px",
     borderRadius: "12px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
   },
-  cardWhite: {
-    background: "#ffffff",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-  },
-  payoutBox: {
-    display: "flex",
-    gap: "10px",
-    marginTop: "14px",
-    flexWrap: "wrap",
-  },
-  input: {
-    flex: 1,
-    minWidth: "160px",
-    padding: "10px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-  },
-  button: {
-    padding: "10px 14px",
-    border: "none",
-    borderRadius: "8px",
-    background: "#007bff",
-    color: "#fff",
-    cursor: "pointer",
+  bigText: {
+    fontSize: "28px",
+    fontWeight: "bold",
+    margin: "10px 0 0",
   },
 };
 

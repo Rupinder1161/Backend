@@ -5,15 +5,13 @@ const connectDB = require("./config/db");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const authRoutes = require("./routes/authRoutes");
-
 const referrerRoutes = require("./routes/referrerRoutes");
+
 dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: "*"
-}));
+app.use(cors());
 app.use(express.json());
 
 connectDB();

@@ -10,6 +10,7 @@ function ManageReferrers() {
     phone: "",
     email: "",
     referralCode: "",
+    password: "",
   });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -41,12 +42,13 @@ function ManageReferrers() {
     e.preventDefault();
     try {
       await axios.post(`${apiUrl}/api/referrers`, formData);
-      setMessage("Referrer created successfully!");
+      setMessage("Referrer and login created successfully!");
       setFormData({
         name: "",
         phone: "",
         email: "",
         referralCode: "",
+        password: "",
       });
 
       const res = await axios.get(`${apiUrl}/api/referrers`);
@@ -89,12 +91,22 @@ function ManageReferrers() {
             value={formData.email}
             onChange={handleChange}
             style={styles.input}
+            required
           />
           <input
             type="text"
             name="referralCode"
             placeholder="Referral Code"
             value={formData.referralCode}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Login Password"
+            value={formData.password}
             onChange={handleChange}
             style={styles.input}
             required

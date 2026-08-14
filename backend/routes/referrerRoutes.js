@@ -1,45 +1,80 @@
 const express = require("express");
 const router = express.Router();
-const Referrer = require("../models/Referrer");
-const Appointment = require("../models/Appointment");
+const bcrypt = require("bcryptjs");
 
-// Create referrer
+const Referrer = require("../models/Referrer");
+const User = require("../models/User");
+
+// Create referrer + login user
 router.post("/", async (req, res) => {
   try {
-    const { name, phone, email, referralCode } = req.body;
+    const { name, phone, email, referralCode, password } = req.body;
 
-    const existing = await Referrer.findOne({ referralCode });
-    if (existing) {
-      return res.status(400).json({ message: "Referral code already exists" });
+    if (!password) {
+      return res.status(400).json({ message: "Password is required for referrer login" });
     }
 
+    const existingReferrer = await Referrer.findOne({
+      $or: [{ referralCode }, { email }],
+    });
+
+    if (existingReferrer) {
+      return res.status(400).json({ message: "Referrer already exists" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Login user already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "referrer",
+    });
+
     const referrer = await Referrer.create({
+      userId: user._id,
       name,
       phone,
       email,
       referralCode,
     });
 
-    res.status(201).json(referrer);
+    res.status(201).json({
+      message: "Referrer and login user created successfully",
+      referrer,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Get all referrers with stats
+// Get all referrers
 router.get("/", async (req, res) => {
   try {
-    const referrers = await Referrer.find().sort({ createdAt: -1 });
+    const referrers = await Referrer.find().populate("userId", "name email role");
     res.json(referrers);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Get referrer by code
-router.get("/code/:code", async (req, res) => {
+// Get logged-in referrer by user id
+router.get("/me/:userId", async (req, res) => {
   try {
-    const referrer = await Referrer.findOne({ referralCode: req.params.code });
+    const referrer = await Referrer.findOne({ userId: req.params.userId })
+      .populate("userId", "name email role");
+
     if (!referrer) {
       return res.status(404).json({ message: "Referrer not found" });
     }
@@ -50,16 +85,32 @@ router.get("/code/:code", async (req, res) => {
   }
 });
 
-// Update referrer stats when referral becomes successful
-router.put("/:id/success", async (req, res) => {
+// Get referrer by code
+router.get("/code/:code", async (req, res) => {
   try {
+    const referrer = await Referrer.findOne({ referralCode: req.params.code });
+
+    if (!referrer) {
+      return res.status(404).json({ message: "Referrer not found" });
+    }
+
+    res.json(referrer);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update payout
+router.put("/:id/payout", async (req, res) => {
+  try {
+    const { paidAmount } = req.body;
+
     const referrer = await Referrer.findById(req.params.id);
     if (!referrer) {
       return res.status(404).json({ message: "Referrer not found" });
     }
 
-    referrer.successfulReferrals += 1;
-    referrer.totalRevenue += 20;
+    referrer.paidOut += Number(paidAmount || 0);
     referrer.balance = referrer.totalRevenue - referrer.paidOut;
 
     await referrer.save();

@@ -79,6 +79,11 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Get current logged in user
+router.get("/me", protect, async (req, res) => {
+  res.json(req.user);
+});
+
 // Get all users
 router.get("/users", async (req, res) => {
   try {
@@ -110,34 +115,10 @@ router.put("/users/:id/password", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({
-      message: "Password updated successfully",
-    });
+    res.json({ message: "Password updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Deactivate user
-router.put("/users/:id/deactivate", async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { active: false },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json({ message: "User deactivated successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-// Get current logged in user
-router.get("/me", protect, async (req, res) => {
-  res.json(req.user);
-});
 module.exports = router;

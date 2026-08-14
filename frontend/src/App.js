@@ -68,6 +68,12 @@ function AppRoutes() {
                 My Jobs
               </Link>
             )}
+
+            {user.role === "referrer" && (
+              <Link to="/referrer-dashboard" style={styles.link}>
+                Referrer Dashboard
+              </Link>
+            )}
           </div>
 
           <button onClick={logout} style={styles.logoutButton}>
@@ -165,6 +171,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <ManageReferrers />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/referrer-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["referrer"]}>
+              <ReferrerDashboard />
             </ProtectedRoute>
           }
         />
