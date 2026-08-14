@@ -118,37 +118,40 @@ function ReferrerDashboard() {
         {referrals.length === 0 ? (
           <p>No referrals yet.</p>
         ) : (
-          <div style={styles.referralList}>
-            {referrals.map((appt) => (
-              <div key={appt._id} style={styles.referralCard}>
-                <div style={styles.referralHeader}>
-                  <strong>{appt.customerName}</strong>
-                  <span style={styles.badge}>{appt.status}</span>
-                </div>
-
-                <div style={styles.referralDetails}>
-                  <p>
-                    <strong>Phone:</strong> {appt.phone}
-                  </p>
-                  <p>
-                    <strong>Issue:</strong> {appt.issueType}
-                  </p>
-                  <p>
-                    <strong>Referral Status:</strong>{" "}
-                    {appt.referralStatus || "referred"}
-                  </p>
-                  <p>
-                    <strong>Revenue:</strong> ${appt.revenue || 0}
-                  </p>
-                  <p>
-                    <strong>Date:</strong>{" "}
-                    {appt.createdAt
-                      ? new Date(appt.createdAt).toLocaleDateString()
-                      : "N/A"}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Customer</th>
+                  <th style={styles.th}>Phone</th>
+                  <th style={styles.th}>Issue</th>
+                  <th style={styles.th}>Referral Status</th>
+                  <th style={styles.th}>Job Status</th>
+                  <th style={styles.th}>Revenue</th>
+                  <th style={styles.th}>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {referrals.map((appt, index) => (
+                  <tr
+                    key={appt._id}
+                    style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}
+                  >
+                    <td style={styles.td}>{appt.customerName}</td>
+                    <td style={styles.td}>{appt.phone}</td>
+                    <td style={styles.td}>{appt.issueType}</td>
+                    <td style={styles.td}>{appt.referralStatus || "referred"}</td>
+                    <td style={styles.td}>{appt.status}</td>
+                    <td style={styles.td}>${appt.revenue || 0}</td>
+                    <td style={styles.td}>
+                      {appt.createdAt
+                        ? new Date(appt.createdAt).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -205,38 +208,32 @@ const styles = {
     margin: "8px 0 0",
     wordBreak: "break-word",
   },
-  referralList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
+  tableWrapper: {
+    overflowX: "auto",
+    marginTop: "12px",
   },
-  referralCard: {
-    background: "#f9fafb",
-    border: "1px solid #e5e7eb",
-    borderRadius: "12px",
-    padding: "14px",
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    minWidth: "900px",
   },
-  referralHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "10px",
-    marginBottom: "10px",
-    flexWrap: "wrap",
+  th: {
+    textAlign: "left",
+    padding: "12px",
+    background: "#f3f4f6",
+    borderBottom: "2px solid #d1d5db",
+    whiteSpace: "nowrap",
   },
-  badge: {
-    display: "inline-block",
-    padding: "6px 10px",
-    borderRadius: "999px",
-    background: "#dbeafe",
-    color: "#1d4ed8",
-    fontSize: "12px",
-    fontWeight: "600",
-    textTransform: "capitalize",
+  td: {
+    padding: "12px",
+    borderBottom: "1px solid #e5e7eb",
+    verticalAlign: "top",
   },
-  referralDetails: {
-    display: "grid",
-    gap: "4px",
+  rowLight: {
+    backgroundColor: "#f8fbff",
+  },
+  rowWhite: {
+    backgroundColor: "#ffffff",
   },
   message: {
     marginTop: "16px",
