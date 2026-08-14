@@ -8,7 +8,7 @@ const referrerSchema = new mongoose.Schema(
       default: null,
     },
     name: { type: String, required: true },
-    phone: { type: String, required: true },
+    phone: { type: String, default: "" },
     email: { type: String },
     referralCode: { type: String, required: true, unique: true },
 
