@@ -16,12 +16,13 @@ function JobDetails() {
   const [completionType, setCompletionType] = useState("");
   const [revenue, setRevenue] = useState("");
   const [finalNotes, setFinalNotes] = useState("");
+  const [timelineAction, setTimelineAction] = useState("");
+  const [timelineNote, setTimelineNote] = useState("");
   const [message, setMessage] = useState("");
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   const apiUrl = process.env.REACT_APP_API_URL;
   const isAdmin = user?.role === "admin" || user?.role === "seniorTech";
-  const isTech = user?.role === "tech";
 
   useEffect(() => {
     const fetchAppointment = async () => {
@@ -31,6 +32,7 @@ function JobDetails() {
         setStatus(res.data.status || "Booked");
         setWorkDone(res.data.workDone || "");
         setCompletionType(res.data.completionType || "");
+        setRevenue(res.data.revenue || "");
         setFinalNotes(res.data.finalNotes || "");
         setSelectedTech(res.data.assignedTech?._id || "");
       } catch (error) {
@@ -74,6 +76,7 @@ function JobDetails() {
       setMessage("Failed to assign tech.");
     }
   };
+
   const handleSave = async () => {
     try {
       const res = await axios.put(`${apiUrl}/api/appointments/${id}/job-update`, {
@@ -145,6 +148,24 @@ function JobDetails() {
     }
   };
 
+  const handleAddTimeline = async () => {
+    try {
+      const res = await axios.put(`${apiUrl}/api/appointments/${id}/timeline`, {
+        action: timelineAction,
+        note: timelineNote,
+        createdBy: user?.id || user?._id,
+      });
+
+      setAppointment(res.data.appointment);
+      setTimelineAction("");
+      setTimelineNote("");
+      setMessage("Timeline entry added.");
+    } catch (error) {
+      console.error(error);
+      setMessage(error.response?.data?.message || "Failed to add timeline entry.");
+    }
+  };
+
   const goToFeedback = () => {
     navigate(`/feedback/${id}`);
   };
@@ -158,23 +179,26 @@ function JobDetails() {
   return (
     <div style={styles.container}>
       <div style={styles.headerCard}>
-        <h1>Job Details</h1>
-        <p style={styles.subTitle}>
-          Manage this job step by step. Start with consent, then complete, feedback, and close.
+        <h1 style={styles.title}>Job Details</h1>
+        <p style={styles.subtitle}>
+          Manage this job step by step.
         </p>
       </div>
 
       <div style={styles.grid}>
         <div style={styles.card}>
           <h3>Job Overview</h3>
-          <p><strong>Customer:</strong> {appointment.customerName}</p>
-          <p><strong>Phone:</strong> {appointment.phone}</p>
-          <p><strong>Address:</strong> {appointment.address}</p>
-          <p><strong>Issue:</strong> {appointment.issueType}</p>
-          <p><strong>Description:</strong> {appointment.issueDescription}</p>
-          <p><strong>Status:</strong> {appointment.status}</p>
-          <p><strong>Job #:</strong> {appointment.jobNumber || "N/A"}</p>
-          <p><strong>Assigned Tech:</strong> {appointment.assignedTech?.name || "Not assigned"}</p>
+          <div style={styles.detailList}>
+            <p><strong>Customer:</strong> {appointment.customerName}</p>
+            <p><strong>Phone:</strong> {appointment.phone}</p>
+            <p><strong>Email:</strong> {appointment.email || "N/A"}</p>
+            <p><strong>Address:</strong> {appointment.address}</p>
+            <p><strong>Issue:</strong> {appointment.issueType}</p>
+            <p><strong>Description:</strong> {appointment.issueDescription}</p>
+            <p><strong>Status:</strong> {appointment.status}</p>
+            <p><strong>Job #:</strong> {appointment.jobNumber || "N/A"}</p>
+            <p><strong>Assigned Tech:</strong> {appointment.assignedTech?.name || "Not assigned"}</p>
+          </div>
         </div>
 
         {isAdmin && (
@@ -195,7 +219,7 @@ function JobDetails() {
 
             <button
               onClick={handleAssignTech}
-              style={styles.greenButton}
+              style={styles.primaryButton}
               disabled={!selectedTech}
             >
               Assign Tech
@@ -206,17 +230,9 @@ function JobDetails() {
 
       <div style={styles.card}>
         <h3>Tech Work Area</h3>
-        <p style={styles.helperText}>
-          For techs: start with consent, then add work notes, then complete or close the job.
-        </p>
 
         <label>Status</label>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          style={styles.input}
-          disabled={isTech && isClosed}
-        >
+        <select value={status} onChange={(e) => setStatus(e.target.value)} style={styles.input}>
           <option value="Booked">Booked</option>
           <option value="Scheduled">Scheduled</option>
           <option value="Assigned">Assigned</option>
@@ -234,7 +250,7 @@ function JobDetails() {
         <textarea
           value={workDone}
           onChange={(e) => setWorkDone(e.target.value)}
-          placeholder="Write a few words about the work done..."
+          placeholder="Write what work was done..."
           style={styles.textarea}
         />
 
@@ -265,26 +281,68 @@ function JobDetails() {
           placeholder="Add final notes..."
           style={styles.textarea}
         />
-        
-       <div style={styles.buttonRow}>
-  <button onClick={handleSave} style={styles.blueButton}>
-    Save Job Update
-  </button>
 
-  <button onClick={handleCompleteJob} style={styles.greenButton}>
-    Complete Job
-  </button>
+        <div style={styles.buttonRow}>
+          <button onClick={handleSave} style={styles.secondaryButton}>
+            Save Job Update
+          </button>
 
-  <button onClick={handleCloseJob} style={styles.grayButton}>
-    Close Job
-  </button>
+          <button onClick={handleCompleteJob} style={styles.primaryButton}>
+            Complete Job
+          </button>
 
-  {isAdmin && isClosed && (
-    <button onClick={handleReopen} style={styles.redButton}>
-      Reopen Job
-    </button>
-  )}
-</div>
+          <button onClick={handleCloseJob} style={styles.grayButton}>
+            Close Job
+          </button>
+
+          {isAdmin && isClosed && (
+            <button onClick={handleReopen} style={styles.redButton}>
+              Reopen Job
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={styles.card}>
+        <h3>Job Timeline</h3>
+
+        <input
+          type="text"
+          placeholder="Action"
+          value={timelineAction}
+          onChange={(e) => setTimelineAction(e.target.value)}
+          style={styles.input}
+        />
+
+        <textarea
+          placeholder="Optional note"
+          value={timelineNote}
+          onChange={(e) => setTimelineNote(e.target.value)}
+          style={styles.textarea}
+        />
+
+        <button onClick={handleAddTimeline} style={styles.secondaryButton}>
+          Add Timeline Entry
+        </button>
+
+        <div style={styles.timelineList}>
+          {appointment.jobTimeline && appointment.jobTimeline.length > 0 ? (
+            appointment.jobTimeline
+              .slice()
+              .reverse()
+              .map((item, index) => (
+                <div key={index} style={styles.timelineItem}>
+                  <strong>{item.action}</strong>
+                  <p style={{ margin: "6px 0" }}>{item.note || "No note"}</p>
+                  <small style={{ color: "#6b7280" }}>
+                    {new Date(item.createdAt).toLocaleString()}
+                  </small>
+                </div>
+              ))
+          ) : (
+            <p>No timeline entries yet.</p>
+          )}
+        </div>
       </div>
 
       {message && <p style={styles.message}>{message}</p>}
@@ -295,7 +353,7 @@ function JobDetails() {
             <h3>Request Feedback</h3>
             <p>This job is ready for customer feedback. Open the feedback page?</p>
             <div style={styles.popupButtons}>
-              <button onClick={goToFeedback} style={styles.greenButton}>
+              <button onClick={goToFeedback} style={styles.primaryButton}>
                 Yes
               </button>
               <button onClick={() => setShowFeedbackPopup(false)} style={styles.grayButton}>
@@ -312,91 +370,115 @@ function JobDetails() {
 const styles = {
   container: {
     maxWidth: "1000px",
-    margin: "40px auto",
-    padding: "20px",
+    margin: "0 auto",
+    padding: "16px",
     fontFamily: "Arial, sans-serif",
+    boxSizing: "border-box",
   },
   headerCard: {
     background: "#fff",
-    padding: "20px",
+    padding: "18px",
     borderRadius: "12px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-    marginBottom: "20px",
+    marginBottom: "16px",
   },
-  subTitle: {
+  title: {
+    margin: 0,
+    fontSize: "28px",
+  },
+  subtitle: {
     margin: "8px 0 0",
     color: "#6b7280",
   },
   grid: {
     display: "grid",
     gridTemplateColumns: "1fr",
-    gap: "20px",
+    gap: "16px",
+    marginBottom: "16px",
   },
   card: {
     background: "#fff",
-    padding: "20px",
+    padding: "18px",
     borderRadius: "12px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+  },
+  detailList: {
+    display: "grid",
+    gap: "6px",
   },
   input: {
     width: "100%",
     padding: "12px",
-    marginBottom: "16px",
+    marginBottom: "14px",
     borderRadius: "8px",
     border: "1px solid #ccc",
     boxSizing: "border-box",
+    fontSize: "16px",
   },
   textarea: {
     width: "100%",
     minHeight: "120px",
     padding: "12px",
-    marginBottom: "16px",
+    marginBottom: "14px",
     borderRadius: "8px",
     border: "1px solid #ccc",
     boxSizing: "border-box",
     resize: "vertical",
-  },
-  helperText: {
-    color: "#6b7280",
-    marginTop: 0,
-    marginBottom: "12px",
+    fontSize: "16px",
   },
   buttonRow: {
     display: "flex",
     gap: "10px",
     flexWrap: "wrap",
+    marginTop: "10px",
   },
-  blueButton: {
-    padding: "12px 18px",
+  primaryButton: {
+    padding: "12px 16px",
     border: "none",
     borderRadius: "8px",
     background: "#007bff",
     color: "white",
     cursor: "pointer",
+    width: "100%",
   },
-  greenButton: {
-    padding: "12px 18px",
+  secondaryButton: {
+    padding: "12px 16px",
     border: "none",
     borderRadius: "8px",
-    background: "#28a745",
+    background: "#2563eb",
     color: "white",
     cursor: "pointer",
+    width: "100%",
   },
   grayButton: {
-    padding: "12px 18px",
+    padding: "12px 16px",
     border: "none",
     borderRadius: "8px",
-    background: "#6c757d",
+    background: "#6b7280",
     color: "white",
     cursor: "pointer",
+    width: "100%",
   },
   redButton: {
-    padding: "12px 18px",
+    padding: "12px 16px",
     border: "none",
     borderRadius: "8px",
     background: "#dc3545",
     color: "white",
     cursor: "pointer",
+    width: "100%",
+  },
+  timelineList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+    marginTop: "14px",
+  },
+  timelineItem: {
+    padding: "14px",
+    borderRadius: "10px",
+    background: "#f9fafb",
+    border: "1px solid #e5e7eb",
   },
   message: {
     marginTop: "16px",
@@ -410,20 +492,22 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
+    padding: "16px",
+    boxSizing: "border-box",
   },
   popup: {
     background: "#fff",
-    padding: "24px",
+    padding: "20px",
     borderRadius: "12px",
-    maxWidth: "450px",
-    width: "90%",
+    maxWidth: "420px",
+    width: "100%",
     boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
   },
   popupButtons: {
     display: "flex",
-    gap: "12px",
+    gap: "10px",
     marginTop: "20px",
-    justifyContent: "flex-end",
+    flexDirection: "column",
   },
 };
 

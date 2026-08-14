@@ -15,7 +15,6 @@ function ReferrerDashboard() {
       try {
         if (!user?.email) return;
 
-        // 1) Load all referrers and find the one that matches the logged-in user's email
         const referrerRes = await axios.get(`${apiUrl}/api/referrers`);
         const match = (referrerRes.data || []).find(
           (r) => r.email?.toLowerCase() === user.email.toLowerCase()
@@ -28,7 +27,6 @@ function ReferrerDashboard() {
 
         setReferrer(match);
 
-        // 2) Load all appointments and filter by referral code or referrer email
         const apptRes = await axios.get(`${apiUrl}/api/appointments`);
         const allAppointments = apptRes.data || [];
 
@@ -59,7 +57,7 @@ function ReferrerDashboard() {
   if (!referrer) {
     return (
       <div style={styles.container}>
-        <h1>Referrer Dashboard</h1>
+        <h1 style={styles.pageTitle}>Referrer Dashboard</h1>
         <p>{message || "Loading your dashboard..."}</p>
       </div>
     );
@@ -76,7 +74,7 @@ function ReferrerDashboard() {
   return (
     <div style={styles.container}>
       <div style={styles.headerCard}>
-        <h1>Referrer Dashboard</h1>
+        <h1 style={styles.pageTitle}>Referrer Dashboard</h1>
         <p style={styles.subtitle}>
           Welcome, {referrer.name}. Here are your referrals and earnings.
         </p>
@@ -120,43 +118,42 @@ function ReferrerDashboard() {
         {referrals.length === 0 ? (
           <p>No referrals yet.</p>
         ) : (
-          <div style={styles.tableWrapper}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Customer</th>
-                  <th style={styles.th}>Phone</th>
-                  <th style={styles.th}>Issue</th>
-                  <th style={styles.th}>Referral Status</th>
-                  <th style={styles.th}>Job Status</th>
-                  <th style={styles.th}>Revenue</th>
-                  <th style={styles.th}>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {referrals.map((appt, index) => (
-                  <tr
-                    key={appt._id}
-                    style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}
-                  >
-                    <td style={styles.td}>{appt.customerName}</td>
-                    <td style={styles.td}>{appt.phone}</td>
-                    <td style={styles.td}>{appt.issueType}</td>
-                    <td style={styles.td}>{appt.referralStatus || "referred"}</td>
-                    <td style={styles.td}>{appt.status}</td>
-                    <td style={styles.td}>${appt.revenue || 0}</td>
-                    <td style={styles.td}>
-                      {appt.createdAt
-                        ? new Date(appt.createdAt).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={styles.referralList}>
+            {referrals.map((appt) => (
+              <div key={appt._id} style={styles.referralCard}>
+                <div style={styles.referralHeader}>
+                  <strong>{appt.customerName}</strong>
+                  <span style={styles.badge}>{appt.status}</span>
+                </div>
+
+                <div style={styles.referralDetails}>
+                  <p>
+                    <strong>Phone:</strong> {appt.phone}
+                  </p>
+                  <p>
+                    <strong>Issue:</strong> {appt.issueType}
+                  </p>
+                  <p>
+                    <strong>Referral Status:</strong>{" "}
+                    {appt.referralStatus || "referred"}
+                  </p>
+                  <p>
+                    <strong>Revenue:</strong> ${appt.revenue || 0}
+                  </p>
+                  <p>
+                    <strong>Date:</strong>{" "}
+                    {appt.createdAt
+                      ? new Date(appt.createdAt).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
+
+      {message && <p style={styles.message}>{message}</p>}
     </div>
   );
 }
@@ -164,16 +161,21 @@ function ReferrerDashboard() {
 const styles = {
   container: {
     maxWidth: "1200px",
-    margin: "40px auto",
-    padding: "20px",
+    margin: "0 auto",
+    padding: "16px",
     fontFamily: "Arial, sans-serif",
+    boxSizing: "border-box",
   },
   headerCard: {
     background: "#fff",
-    padding: "20px",
+    padding: "18px",
     borderRadius: "12px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-    marginBottom: "20px",
+    marginBottom: "16px",
+  },
+  pageTitle: {
+    margin: 0,
+    fontSize: "28px",
   },
   subtitle: {
     color: "#6b7280",
@@ -181,50 +183,64 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "16px",
-    marginBottom: "20px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+    gap: "12px",
+    marginBottom: "16px",
   },
   card: {
     background: "#f8fbff",
-    padding: "18px",
+    padding: "16px",
     borderRadius: "12px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
   },
   cardWide: {
     background: "#fff",
-    padding: "20px",
+    padding: "18px",
     borderRadius: "12px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
   },
   bigText: {
-    fontSize: "28px",
+    fontSize: "24px",
     fontWeight: "bold",
-    margin: "10px 0 0",
+    margin: "8px 0 0",
+    wordBreak: "break-word",
   },
-  tableWrapper: {
-    overflowX: "auto",
+  referralList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
   },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    minWidth: "900px",
+  referralCard: {
+    background: "#f9fafb",
+    border: "1px solid #e5e7eb",
+    borderRadius: "12px",
+    padding: "14px",
   },
-  th: {
-    textAlign: "left",
-    padding: "12px",
-    background: "#f3f4f6",
-    borderBottom: "2px solid #d1d5db",
+  referralHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "10px",
+    flexWrap: "wrap",
   },
-  td: {
-    padding: "12px",
-    borderBottom: "1px solid #e5e7eb",
+  badge: {
+    display: "inline-block",
+    padding: "6px 10px",
+    borderRadius: "999px",
+    background: "#dbeafe",
+    color: "#1d4ed8",
+    fontSize: "12px",
+    fontWeight: "600",
+    textTransform: "capitalize",
   },
-  rowLight: {
-    backgroundColor: "#f8fbff",
+  referralDetails: {
+    display: "grid",
+    gap: "4px",
   },
-  rowWhite: {
-    backgroundColor: "#ffffff",
+  message: {
+    marginTop: "16px",
+    color: "#374151",
   },
 };
 
