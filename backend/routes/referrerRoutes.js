@@ -74,31 +74,12 @@ router.get("/", async (req, res) => {
 // Get logged-in referrer by user id
 router.get("/me/:userId", async (req, res) => {
   try {
-    let referrer = await Referrer.findOne({ userId: req.params.userId });
+    const referrer = await Referrer.findOne({ userId: req.params.userId })
+      .populate("userId", "name email role");
 
     if (!referrer) {
-      const user = await User.findById(req.params.userId);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Create a referrer profile automatically
-//       referrer = await Referrer.create({
-//   userId: user._id,
-//   name: user.name,
-//   phone: "",
-//   email: user.email,
-//   referralCode: `REF-${user._id.toString().slice(-6).toUpperCase()}`,
-// });
-return res.status(404).json({ message: "Referrer not found" });
+      return res.status(404).json({ message: "Referrer not found" });
     }
-
-    // Populate after creation
-    referrer = await Referrer.findById(referrer._id).populate(
-      "userId",
-      "name email role"
-    );
 
     res.json(referrer);
   } catch (error) {
