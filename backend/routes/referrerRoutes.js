@@ -171,4 +171,18 @@ router.put("/:id/payout", async (req, res) => {
   }
 });
 
+router.get("/email/:email", async (req, res) => {
+  try {
+    const referrer = await Referrer.findOne({ email: req.params.email });
+
+    if (!referrer) {
+      return res.status(404).json({ message: "Referrer not found" });
+    }
+
+    res.json(referrer);
+  } catch (error) {
+    console.error("Get referrer by email error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

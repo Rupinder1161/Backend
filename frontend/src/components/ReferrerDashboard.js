@@ -17,7 +17,7 @@ function ReferrerDashboard() {
 
         const userId = user?.id || user?._id;
 
-        const res = await axios.get(`${apiUrl}/api/referrers/me/${userId}`);
+        const res = await axios.get(`${apiUrl}/api/referrers/email/${email}`);
         setReferrer(res.data);
       } catch (error) {
         console.error("Error fetching referrer:", error);
