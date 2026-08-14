@@ -7,42 +7,38 @@ function ReferrerDashboard() {
   const { user } = useContext(AuthContext);
 
   const [referrer, setReferrer] = useState(null);
-  // const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
- useEffect(() => {
-  const loadMyReferrer = async () => {
-    try {
-      if (!user?.email) return;
+  useEffect(() => {
+    const loadMyReferrer = async () => {
+      try {
+        if (!user?.email) return;
 
-      const res = await axios.get(`${apiUrl}/api/referrers`);
-      const match = (res.data || []).find(
-        (r) => r.email?.toLowerCase() === user.email.toLowerCase()
-      );
+        const res = await axios.get(`${apiUrl}/api/referrers`);
+        const match = (res.data || []).find(
+          (r) => r.email?.toLowerCase() === user.email.toLowerCase()
+        );
 
-      if (!match) {
-        setMessage("Referrer not found.");
-        setLoading(false);
-        return;
+        if (!match) {
+          setMessage("Referrer not found.");
+          return;
+        }
+
+        setReferrer(match);
+      } catch (error) {
+        console.error("Error fetching referrer:", error);
+        setMessage("Failed to load your referrer dashboard.");
       }
+    };
 
-      setReferrer(match);
-    } catch (error) {
-      console.error("Error fetching referrer:", error);
-      setMessage("Failed to load your referrer dashboard.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (user) loadMyReferrer();
-}, [apiUrl, user]);
+    if (user) loadMyReferrer();
+  }, [apiUrl, user]);
 
   if (!referrer) {
     return (
       <div style={styles.container}>
         <h1>Referrer Dashboard</h1>
-        <p>{message || "No referrer profile linked to your account yet."}</p>
+        <p>{message || "Loading referrer dashboard..."}</p>
       </div>
     );
   }
