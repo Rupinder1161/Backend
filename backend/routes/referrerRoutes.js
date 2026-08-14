@@ -84,13 +84,14 @@ router.get("/me/:userId", async (req, res) => {
       }
 
       // Create a referrer profile automatically
-      referrer = await Referrer.create({
-  userId: user._id,
-  name: user.name,
-  phone: "",
-  email: user.email,
-  referralCode: `REF-${user._id.toString().slice(-6).toUpperCase()}`,
-});
+//       referrer = await Referrer.create({
+//   userId: user._id,
+//   name: user.name,
+//   phone: "",
+//   email: user.email,
+//   referralCode: `REF-${user._id.toString().slice(-6).toUpperCase()}`,
+// });
+return res.status(404).json({ message: "Referrer not found" });
     }
 
     // Populate after creation
