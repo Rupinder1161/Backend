@@ -7,48 +7,78 @@ function ReferrerDashboard() {
   const { user } = useContext(AuthContext);
 
   const [referrer, setReferrer] = useState(null);
+  const [referrals, setReferrals] = useState([]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const loadMyReferrer = async () => {
+    const loadDashboard = async () => {
       try {
         if (!user?.email) return;
 
-        const res = await axios.get(`${apiUrl}/api/referrers`);
-        const match = (res.data || []).find(
+        // 1) Load all referrers and find the one that matches the logged-in user's email
+        const referrerRes = await axios.get(`${apiUrl}/api/referrers`);
+        const match = (referrerRes.data || []).find(
           (r) => r.email?.toLowerCase() === user.email.toLowerCase()
         );
 
         if (!match) {
-          setMessage("Referrer not found.");
+          setMessage("Referrer profile not found.");
           return;
         }
 
         setReferrer(match);
+
+        // 2) Load all appointments and filter by referral code or referrer email
+        const apptRes = await axios.get(`${apiUrl}/api/appointments`);
+        const allAppointments = apptRes.data || [];
+
+        const myReferrals = allAppointments.filter((appt) => {
+          const codeMatch =
+            appt.referralCode &&
+            appt.referralCode.toLowerCase() === match.referralCode.toLowerCase();
+
+          const emailMatch =
+            appt.referrer?.email &&
+            appt.referrer.email.toLowerCase() === match.email.toLowerCase();
+
+          return codeMatch || emailMatch;
+        });
+
+        setReferrals(myReferrals);
       } catch (error) {
-        console.error("Error fetching referrer:", error);
+        console.error("Error loading referrer dashboard:", error);
         setMessage("Failed to load your referrer dashboard.");
       }
     };
 
-    if (user) loadMyReferrer();
+    if (user) {
+      loadDashboard();
+    }
   }, [apiUrl, user]);
 
   if (!referrer) {
     return (
       <div style={styles.container}>
         <h1>Referrer Dashboard</h1>
-        <p>{message || "Loading referrer dashboard..."}</p>
+        <p>{message || "Loading your dashboard..."}</p>
       </div>
     );
   }
+
+  const successfulCount = referrals.filter(
+    (r) => r.referralStatus === "successful" || r.status === "Completed"
+  ).length;
+
+  const scheduledCount = referrals.filter(
+    (r) => r.referralStatus === "scheduled" || r.status === "Scheduled"
+  ).length;
 
   return (
     <div style={styles.container}>
       <div style={styles.headerCard}>
         <h1>Referrer Dashboard</h1>
         <p style={styles.subtitle}>
-          Welcome, {referrer.name}. Here are your referral earnings and activity.
+          Welcome, {referrer.name}. Here are your referrals and earnings.
         </p>
       </div>
 
@@ -60,27 +90,22 @@ function ReferrerDashboard() {
 
         <div style={styles.card}>
           <h3>Total Referrals</h3>
-          <p style={styles.bigText}>{referrer.totalReferrals}</p>
+          <p style={styles.bigText}>{referrals.length}</p>
         </div>
 
         <div style={styles.card}>
           <h3>Scheduled</h3>
-          <p style={styles.bigText}>{referrer.scheduledReferrals}</p>
+          <p style={styles.bigText}>{scheduledCount}</p>
         </div>
 
         <div style={styles.card}>
           <h3>Successful</h3>
-          <p style={styles.bigText}>{referrer.successfulReferrals}</p>
+          <p style={styles.bigText}>{successfulCount}</p>
         </div>
 
         <div style={styles.card}>
           <h3>Total Earned</h3>
           <p style={styles.bigText}>${referrer.totalRevenue}</p>
-        </div>
-
-        <div style={styles.card}>
-          <h3>Paid Out</h3>
-          <p style={styles.bigText}>${referrer.paidOut}</p>
         </div>
 
         <div style={styles.card}>
@@ -90,10 +115,47 @@ function ReferrerDashboard() {
       </div>
 
       <div style={styles.cardWide}>
-        <h3>Account Details</h3>
-        <p><strong>Name:</strong> {referrer.name}</p>
-        <p><strong>Phone:</strong> {referrer.phone}</p>
-        <p><strong>Email:</strong> {referrer.email || "N/A"}</p>
+        <h3>My Referred Jobs</h3>
+
+        {referrals.length === 0 ? (
+          <p>No referrals yet.</p>
+        ) : (
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Customer</th>
+                  <th style={styles.th}>Phone</th>
+                  <th style={styles.th}>Issue</th>
+                  <th style={styles.th}>Referral Status</th>
+                  <th style={styles.th}>Job Status</th>
+                  <th style={styles.th}>Revenue</th>
+                  <th style={styles.th}>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {referrals.map((appt, index) => (
+                  <tr
+                    key={appt._id}
+                    style={index % 2 === 0 ? styles.rowLight : styles.rowWhite}
+                  >
+                    <td style={styles.td}>{appt.customerName}</td>
+                    <td style={styles.td}>{appt.phone}</td>
+                    <td style={styles.td}>{appt.issueType}</td>
+                    <td style={styles.td}>{appt.referralStatus || "referred"}</td>
+                    <td style={styles.td}>{appt.status}</td>
+                    <td style={styles.td}>${appt.revenue || 0}</td>
+                    <td style={styles.td}>
+                      {appt.createdAt
+                        ? new Date(appt.createdAt).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -139,6 +201,30 @@ const styles = {
     fontSize: "28px",
     fontWeight: "bold",
     margin: "10px 0 0",
+  },
+  tableWrapper: {
+    overflowX: "auto",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    minWidth: "900px",
+  },
+  th: {
+    textAlign: "left",
+    padding: "12px",
+    background: "#f3f4f6",
+    borderBottom: "2px solid #d1d5db",
+  },
+  td: {
+    padding: "12px",
+    borderBottom: "1px solid #e5e7eb",
+  },
+  rowLight: {
+    backgroundColor: "#f8fbff",
+  },
+  rowWhite: {
+    backgroundColor: "#ffffff",
   },
 };
 
