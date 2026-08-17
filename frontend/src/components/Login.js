@@ -24,11 +24,17 @@ function Login() {
       login(res.data.user, res.data.token);
 
       setMessage("Login successful!");
+      const role = res.data.user.role?.trim().toLowerCase();
 
-      if (res.data.user.role === "admin" || res.data.user.role === "seniorTech") {
+      if (role === "admin" || role === "seniorTech") {
         navigate("/");
-      } else {
+      } else if (role === "tech"){
         navigate("/tech");
+      } else if (role === "referrer"){
+        navigate ("/referrer-dashboard")               
+      }
+      else{
+        navigate("/login")
       }
     } catch (error) {
       console.error(error);
