@@ -125,7 +125,7 @@ function ReferrerDashboard() {
                   <th style={styles.th}>Customer</th>
                   <th style={styles.th}>Phone</th>
                   <th style={styles.th}>Issue</th>
-                  <th style={styles.th}>Referral Status</th>
+  
                   <th style={styles.th}>Job Status</th>
       
                   <th style={styles.th}>Date</th>
@@ -142,7 +142,6 @@ function ReferrerDashboard() {
                     <td style={styles.td}>{appt.issueType}</td>
                     <td style={styles.td}>{appt.referralStatus || "referred"}</td>
                     <td style={styles.td}>{appt.status}</td>
-                    <td style={styles.td}>${appt.revenue || 0}</td>
                     <td style={styles.td}>
                       {appt.createdAt
                         ? new Date(appt.createdAt).toLocaleDateString()
