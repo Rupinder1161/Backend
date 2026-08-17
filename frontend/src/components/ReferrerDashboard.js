@@ -127,7 +127,7 @@ function ReferrerDashboard() {
                   <th style={styles.th}>Issue</th>
                   <th style={styles.th}>Referral Status</th>
                   <th style={styles.th}>Job Status</th>
-                  <th style={styles.th}>Revenue</th>
+      
                   <th style={styles.th}>Date</th>
                 </tr>
               </thead>
